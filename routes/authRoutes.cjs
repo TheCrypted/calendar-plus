@@ -1,0 +1,49 @@
+const express = require('express')
+const bcrypt = require('bcrypt')
+const User = require('../models/userModel.cjs')
+const {authToken, genToken} = require("../middleware/auth.cjs");
+const router = express.Router();
+
+router.post("/signup", async (req, res) =>{
+    try {
+        const {name, email, password} = req.body;
+        const userExisting = await User.find({email});
+        if (userExisting.length > 0) {
+            return res.status(503).json({message: "User already exists"})
+        } else {
+            let passCrypt = await bcrypt.hash(password, 10)
+            const newUser = new User({name, email, password: passCrypt})
+            newUser.save().catch(err => console.log("Error saving user: ", err))
+            return res.status(200).json({message: "User created"})
+        }
+    } catch (err) {
+        return res.status(400).json({message: "Error creating user"})
+    }
+})
+
+router.post("/signin", async (req, res) =>{
+    try{
+        const {email, password} = req.body;
+        const userExisting = await User.find({email});
+        if (userExisting.length === 0) {
+            return res.status(503).json({message: "User does not exist"})
+        } else {
+            let passCrypt = await bcrypt.compare(password, userExisting.password)
+            if (passCrypt) {
+                genToken(userExisting)
+                return res.status(200).json({message: "Successfully logged in", user: userExisting})
+            } else {
+                return res.status(503).json({message: "Wrong password"})
+            }
+        }
+    } catch (e){
+        return res.status(403).json({message: "Error logging in"})
+    }
+})
+
+router.get("/protected", authToken, (req, res) => {
+    return res.status(201).send(JSON.stringify({
+        message: "token verified",
+        user: req.user
+    }))
+})
