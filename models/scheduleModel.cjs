@@ -1,30 +1,35 @@
-const Mongoose = require("mongoose");
-
-const scheduleSchema = new Mongoose.Schema({
+const sequelize = require("../config/db.cjs");
+const User = require("./userModel.cjs")
+const {Model, DataTypes} = require("sequelize");
+class Schedule extends Model {}
+Schedule.init({
     user: {
-        type: Mongoose.Schema.Types.ObjectId,
-        required: true
+        type: DataTypes.INTEGER,
+        required: true,
+        references: {
+            model: User,
+            key: "id"
+        }
     },
     day: {
-        type: Date,
+        type: DataTypes.DATE,
         required: true
     },
     dayStart: {
-        type: Date,
+        type: DataTypes.DATE,
         required: true
     },
     dayEnd: {
-        type: Date,
+        type: DataTypes.DATE,
         required: true
     },
     duration: {
-        type: Date,
+        type: DataTypes.DATE,
         required: true
-    },
-    events: [{
-        type: Mongoose.Schema.Types.ObjectId,
-        ref: "Event"
-    }]
+    }
+}, {
+    sequelize, modelName: "scheduleModel"
 })
 
-module.exports = Mongoose.model("Schedule", scheduleSchema)
+Schedule.belongsTo(User, {foreignKey: "id", sourceKey: "user", targetKey: "id"})
+module.exports = Schedule

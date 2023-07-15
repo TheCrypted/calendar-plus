@@ -1,26 +1,21 @@
-const Mongoose = require("mongoose");
-
-const userSchema = new Mongoose.Schema({
+const sequelize = require("../config/db.cjs");
+const {Model, DataTypes} = require("sequelize");
+class User extends Model {}
+User.init({
     name: {
-        type: String,
-        required: true
+        type: DataTypes.STRING,
+        allowNull: false
     },
     email: {
-        type: String,
-        required: true
+        type: DataTypes.STRING,
+        allowNull: false
     },
     password: {
-        type: String,
-        required: true
-    },
-    events: [{
-        type: Mongoose.Schema.Types.ObjectId,
-        ref: "Event"
-    }],
-    schedules: [{
-        type: Mongoose.Schema.Types.ObjectId,
-        ref: "Schedule"
-    }]
+        type: DataTypes.STRING,
+        allowNull: false
+    }
+}, {
+    sequelize, modelName: "userModel"
 })
 
-module.exports = Mongoose.model("User", userSchema)
+module.exports = User

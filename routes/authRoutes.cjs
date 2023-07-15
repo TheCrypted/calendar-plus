@@ -2,8 +2,10 @@ const express = require('express')
 const bcrypt = require('bcrypt')
 const User = require('../models/userModel.cjs')
 const {authToken, genToken} = require("../middleware/auth.cjs");
+const connectDB = require("../config/db.cjs");
 const router = express.Router();
 
+connectDB.sync().then((data)=> console.log("DB is synced and ready")).catch(err => console.log(err))
 router.post("/signup", async (req, res) =>{
     try {
         const {name, email, password} = req.body;
@@ -47,3 +49,5 @@ router.get("/protected", authToken, (req, res) => {
         user: req.user
     }))
 })
+
+module.exports = router;

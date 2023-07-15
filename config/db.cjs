@@ -1,19 +1,8 @@
-const mongoose = require('mongoose');
-require('dotenv').config();
+const {Sequelize} = require("sequelize");
 
-const URI = process.env.MODEL_URI;
-const OPTIONS = {
-    userNewUrlParser: true,
-    useUnifiedTopology: true
-};
-const connectDB = async () => {
-    try {
-        await mongoose.connect(URI, OPTIONS);
-        console.log("Successfully connected to DB")
-    } catch (e){
-        console.log("Failed to connect to DB", e)
-        process.exit()
-    }
-}
+const meetingDB = new Sequelize("calendarDb", "Aman04", "TheCrypted", {
+    dialect: "sqlite",
+    host: "./config/db.sqlite"
+})
 
-module.exports = connectDB
+module.exports = meetingDB
