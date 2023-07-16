@@ -69,7 +69,7 @@ export const Schedules = () => {
 					schedules.map((schedule) => {
 						return (
 							<div key={schedule.id} onClick={()=>{
-								navigate(`/Day/${user.name}?schedule=${schedule.id}`)
+								navigate(`/Day/${user.name}?schedule=${schedule.id}&owner=${user.id}`)
 							}
 							} className="hover:cursor-pointer transition-all hover:drop-shadow-xl text-black justify-center text-2xl font-bold bg-white rounded-md flex items-center  w-1/6 h-1/6">{schedule.day.split("T")[0]}</div>
 						)

@@ -12,7 +12,6 @@ router.get("/:id", async function(req, res) {
                 id: userID
             }
         });
-        const schedules = await Schedule.findAll()
         if(user) {
             const userSchedules = await user.getScheduleModels();
             return res.status(200).json({

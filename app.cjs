@@ -5,7 +5,10 @@ const scheduleRoutes = require("./routes/scheduleRoutes.cjs");
 const eventRoutes = require("./routes/eventRoutes.cjs");
 const connectDB = require("./config/db.cjs")
 const {urlencoded} = require("express");
-const Schedules = require("./models/scheduleModel.cjs")
+const Event = require("./models/eventModel.cjs")
+const {DataTypes} = require("sequelize");
+const User = require("./models/userModel.cjs");
+const Schedule = require("./models/scheduleModel.cjs");
 require("dotenv").config();
 const PORT = 3000;
 const app = express();
@@ -32,7 +35,16 @@ const init = async()=>{
     //     console.log(date)
     //     await Schedules.create(userSchedule1)
     // }
-
+    // const event = {
+    //     clientEmail: "ruchinov@gmail.com",
+    //     userModelId: 1,
+    //     title: "Get good lol",
+    //     description: "placeholder",
+    //     scheduleModelId: 4,
+    //     start: new Date(),
+    //     end: new Date()
+    // };
+    // await Event.create(event);
     app.listen(PORT, ()=>{
         console.log(`App is running on Port: ${PORT}`);
     })
