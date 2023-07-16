@@ -1,4 +1,5 @@
 const sequelize = require("../config/db.cjs");
+// const Schedule = require("./scheduleModel.cjs");
 const {Model, DataTypes} = require("sequelize");
 class User extends Model {}
 User.init({
@@ -17,5 +18,4 @@ User.init({
 }, {
     sequelize, modelName: "userModel"
 })
-
 module.exports = User

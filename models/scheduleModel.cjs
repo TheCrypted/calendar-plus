@@ -3,7 +3,7 @@ const User = require("./userModel.cjs")
 const {Model, DataTypes} = require("sequelize");
 class Schedule extends Model {}
 Schedule.init({
-    user: {
+    userModelId: {
         type: DataTypes.INTEGER,
         required: true,
         references: {
@@ -16,20 +16,17 @@ Schedule.init({
         required: true
     },
     dayStart: {
-        type: DataTypes.DATE,
+        type: DataTypes.INTEGER,
         required: true
     },
     dayEnd: {
-        type: DataTypes.DATE,
-        required: true
-    },
-    duration: {
-        type: DataTypes.DATE,
+        type: DataTypes.INTEGER,
         required: true
     }
 }, {
     sequelize, modelName: "scheduleModel"
 })
 
-Schedule.belongsTo(User, {foreignKey: "id", sourceKey: "user", targetKey: "id"})
+User.hasMany(Schedule, {sourceKey: "id", targetKey: "user"})
+// Schedule.belongsTo(User, {foreignKey: "id", sourceKey: "user", targetKey: "id"})
 module.exports = Schedule

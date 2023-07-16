@@ -5,20 +5,25 @@ const {authToken, genToken} = require("../middleware/auth.cjs");
 const connectDB = require("../config/db.cjs");
 const router = express.Router();
 
-connectDB.sync().then((data)=> console.log("DB is synced and ready")).catch(err => console.log(err))
+connectDB.sync().then((data)=> console.log("DB is synced and ready authRoutes")).catch(err => console.log(err))
 router.post("/signup", async (req, res) =>{
     try {
         const {name, email, password} = req.body;
-        const userExisting = await User.find({email});
-        if (userExisting.length > 0) {
+        const userExisting = await User.findOne({
+            where: {
+                email
+            }
+        });
+        if (userExisting) {
             return res.status(503).json({message: "User already exists"})
         } else {
             let passCrypt = await bcrypt.hash(password, 10)
-            const newUser = new User({name, email, password: passCrypt})
-            newUser.save().catch(err => console.log("Error saving user: ", err))
+            const newUser = {name, email, password: passCrypt}
+            await User.create(newUser);
             return res.status(200).json({message: "User created"})
         }
     } catch (err) {
+        console.log(err)
         return res.status(400).json({message: "Error creating user"})
     }
 })
@@ -26,20 +31,25 @@ router.post("/signup", async (req, res) =>{
 router.post("/signin", async (req, res) =>{
     try{
         const {email, password} = req.body;
-        const userExisting = await User.find({email});
-        if (userExisting.length === 0) {
+        const userExisting = await User.findOne({
+            where:{
+                email
+            }
+        });
+        if (!userExisting) {
             return res.status(503).json({message: "User does not exist"})
         } else {
             let passCrypt = await bcrypt.compare(password, userExisting.password)
             if (passCrypt) {
-                genToken(userExisting)
-                return res.status(200).json({message: "Successfully logged in", user: userExisting})
+                const token = genToken(userExisting)
+                return res.status(200).json({message: "Successfully logged in", token})
             } else {
-                return res.status(503).json({message: "Wrong password"})
+                return res.status(403).json({message: "Wrong password"})
             }
         }
     } catch (e){
-        return res.status(403).json({message: "Error logging in"})
+        console.log(e)
+        return res.status(404).json({message: "Error logging in"})
     }
 })
 

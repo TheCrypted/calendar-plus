@@ -1,8 +1,14 @@
 const jwt = require("jsonwebtoken")
 const SECRET_KEY = "qnWmmdNaYVmJy9H8WZ9rDLGuyolV7lGg"
 const genToken = (user) => {
-    jwt.sign(user, SECRET_KEY, {
-        expireIn: "1 hour"
+    const payload = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        password: user.password
+    }
+    return jwt.sign(payload, SECRET_KEY, {
+        expiresIn: "1 hour"
     })
 }
 
