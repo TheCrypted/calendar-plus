@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const authRoutes = require("./routes/authRoutes.cjs");
 const scheduleRoutes = require("./routes/scheduleRoutes.cjs");
+const eventRoutes = require("./routes/eventRoutes.cjs");
 const connectDB = require("./config/db.cjs")
 const {urlencoded} = require("express");
 const Schedules = require("./models/scheduleModel.cjs")
@@ -14,6 +15,7 @@ app.use(express.json());
 app.use(urlencoded({extended: true}));
 app.use("/auth", authRoutes);
 app.use("/schedules", scheduleRoutes);
+app.use("/events", eventRoutes);
 connectDB.sync().then((data)=> console.log("DB is synced and ready")).catch(err => console.log(err))
 
 const init = async()=>{

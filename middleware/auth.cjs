@@ -15,11 +15,11 @@ const genToken = (user) => {
 const authToken = (req, res, next) => {
     const token = req.headers.auth;
     if(!token){
-        return req.status(403).json({message: "No token provided"})
+        return res.status(403).json({message: "No token provided"})
     } else {
         jwt.verify(token, SECRET_KEY, (err, user)=> {
             if(err) {
-                return req.status(403).json({message:"Could not verify token"})
+                return res.status(403).json({message:"Could not verify token"})
             } else {
                 req.user = user;
                 next()

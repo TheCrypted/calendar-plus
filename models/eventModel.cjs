@@ -9,7 +9,7 @@ Event.init({
         type: String,
         required: true
     },
-    user: {
+    userModelId: {
         type: DataTypes.INTEGER,
         required: true,
         references: {
@@ -25,7 +25,7 @@ Event.init({
         type: DataTypes.STRING,
         required: false,
     },
-    schedule: {
+    scheduleModelId: {
         type: DataTypes.INTEGER,
         required: true,
         references: {
@@ -42,9 +42,11 @@ Event.init({
         required: true
     }
 }, {
-    sequelize, modelName: "eventModel"
+    sequelize, modelName: "event"
 })
 
-Event.belongsTo(User, {foreignKey: "id", sourceKey: "user", targetKey: "id"})
-Event.belongsTo(Schedule, {foreignKey: "id", sourceKey: "schedule", targetKey: "id"})
-module.exports = Event
+Event.belongsTo(User);
+Event.belongsTo(Schedule);
+User.hasMany(Event);
+Schedule.hasMany(Event);
+module.exports = Event;
