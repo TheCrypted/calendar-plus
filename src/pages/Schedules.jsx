@@ -29,16 +29,17 @@ export const Schedules = () => {
 	}, [])
 	useEffect(()=>{
 		async function getSchedules() {
-			let response = await fetch(`http://localhost:3000/schedules/${user.id}`, {
+			let token = localStorage.getItem('token')
+			let response = await fetch(`http://localhost:3000/schedules/all`, {
 				method: "GET",
 				headers: {
-					"content-type": "application/json"
+					"Content-type": "application/json",
+					auth: token
 				}
 			})
 			let resp = await response.json()
 			if(response.ok) {
 				setSchedules(resp.userSchedules)
-
 			} else {
 				console.log("error getting user schedules")
 			}
@@ -59,13 +60,13 @@ export const Schedules = () => {
 		if(currentlySelecting.current){
 			let higher = Math.max(currentlySelecting.current, index)
 			let lower = Math.min(currentlySelecting.current, index)
-			let newSelected = [new Array(schedules.length).fill(false)]
+			let newSelected = (new Array(schedules.length).fill(false))
 			for(let i = lower; i < higher+1; i++){
 				newSelected[i] = true
 			}
 			setSelected(newSelected)
 		} else {
-			let newSelected = [new Array(schedules.length).fill(false)]
+			let newSelected = (new Array(schedules.length).fill(false))
 			newSelected[index] = true
 			setSelected(newSelected)
 		}
@@ -74,10 +75,20 @@ export const Schedules = () => {
 
 	return (
 		<div className="bg-black w-full h-full text-white">
-			<button className="bg-white text-black w-1/4 h-1/5" onClick={async (e)=>{
-				selectorRef.current = !selectorRef.current
-				e.target.innerText = "Selecting " + selectorRef.current
-			}}>Selecting false</button>
+			<div className="bg-black text-black flex gap-4 w-full h-1/5">
+				<button className="bg-white text-black w-1/4 h-1/5 font-bold" onClick={async (e)=>{
+					setSelected(new Array(schedules.length).fill(false))
+					selectorRef.current = !selectorRef.current
+					e.target.innerText = "Selecting " + selectorRef.current
+				}}>Selecting false</button>
+				<button className="bg-white text-black w-1/4 h-1/5 font-bold" onClick={()=>{
+					let firstTrueIndex = selected.indexOf(true)
+					let lastTrueIndex = selected.lastIndexOf(true)
+					navigate(`/Presets?s=${firstTrueIndex}&e=${lastTrueIndex}`)
+				}}>
+					Set Preset for Selection
+				</button>
+			</div>
 			{schedules && <div className="w-full bg-zinc-300 scrollbar flex justify-center p-4 gap-4 overflow-y-auto h-4/5 flex-wrap">
 				{
 					schedules.map((schedule, index) => {
