@@ -33,7 +33,7 @@ const init = async()=>{
     //     date.setDate(date.getDate() + 1)
     //     userSchedule1.day = date
     //     console.log(date)
-    //     await Schedules.create(userSchedule1)
+    //     await Schedule.create(userSchedule1)
     // }
     // const event = {
     //     clientEmail: "ruchinov@gmail.com",

@@ -34,11 +34,11 @@ Event.init({
         }
     },
     start: {
-        type: DataTypes.DATE,
+        type: DataTypes.STRING,
         required: true
     },
     end: {
-        type: DataTypes.DATE,
+        type: DataTypes.STRING,
         required: true
     }
 }, {

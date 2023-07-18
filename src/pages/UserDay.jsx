@@ -32,26 +32,30 @@ export const UserDay = () => {
 	const submitForm = async () => {
 		const searchParams = new URLSearchParams(location.search);
 		const scheduleID = searchParams.get("schedule");
+		const event = {
+			clientEmail: emailRef.current.value,
+			userModelId: parseInt(scheduleOwner),
+			title: titleRef.current.value,
+			description: descriptionRef.current.value,
+			scheduleModelId: parseInt(scheduleID),
+			start: startRef.current.value,
+			end: endRef.current.value
+		}
 		let response = await fetch("http://localhost:3000/events/newevents", {
 			method: "POST",
 			headers: {
-				"content-type": "application.json"
+				"Content-type": "application/json"
 			},
 			body: JSON.stringify({
-				event: {
-					clientEmail: emailRef.current.value,
-					userModelId: scheduleOwner,
-					title: titleRef.current.value,
-					description: descriptionRef.current.value,
-					scheduleModelId: scheduleID,
-					start: startRef.current.value,// This is wrong as the DB only accepts Date objects so you gotta convert this to a date somehow
-					end: endRef.current.value// This is wrong as the DB only accepts Date objects so you gotta convert this to a date somehow
-				}
+				event
 			})
 		})
+		console.log(event)
 		let resp = await response.json();
 		if(!response.ok){
 			alert(resp.message)
+		} else {
+			location.reload()
 		}
 	}
 
@@ -62,7 +66,7 @@ export const UserDay = () => {
 					events.map((event)=>{
 						return (
 							<div key={event.id} className="bg-zinc-200 p-4 border-white border-2 hover:h-1/5 hover:bg-zinc-300 transition-all hover:cursor-pointer w-full h-1/6 flex items-center justify-center text-2xl font-bold">
-								{event.start.split(/[T.]/)[1]} - {event.end.split(/[T.]/)[1]} : {event.title}
+								{event.start} - {event.end} : {event.title}
 							</div>
 						)
 					})
@@ -75,7 +79,10 @@ export const UserDay = () => {
 					<input ref={descriptionRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="Enter description" />
 					<input ref={startRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="time" />
 					<input ref={endRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="time" />
-					<button type="submit" className="bg-white rounded-md drop-shadow-md hover:drop-shadow-2xl w-full h-full text-2xl font-bold">Submit</button>
+					<button type="submit" className="bg-white rounded-md drop-shadow-md hover:drop-shadow-2xl w-full h-full text-2xl font-bold" onClick={(e)=>{
+						e.preventDefault();
+						submitForm()
+					}}>Submit</button>
 				</form>
 			</div>
 		</div>

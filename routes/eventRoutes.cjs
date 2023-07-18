@@ -23,7 +23,7 @@ router.get("/:scheduleId", async (req, res) => {
 router.post("/newevents", async (req, res) => {
     try {
         const {event} = req.body
-        await Event.create(event)
+        await Events.create(event);
         return res.status(200).json({message: "Event logged successfully"});
     } catch (e){
         console.log("An error occurred while creating new event: ", e)
