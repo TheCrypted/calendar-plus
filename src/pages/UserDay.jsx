@@ -1,17 +1,19 @@
 import {useEffect, useRef, useState} from "react";
+import {PresetForm} from "./utils/PresetForm.jsx";
 
 export const UserDay = () => {
 	const [events, setEvents] = useState([])
 	const [scheduleOwner, setScheduleOwner] = useState(null)
 	const [presets, setPresets] = useState([])
+	const [selectedPreset, setSelectedPreset] = useState(null)
 	const emailRef = useRef(null);
 	const titleRef = useRef(null);
 	const descriptionRef = useRef(null);
 	const startRef = useRef(null);
 	const endRef = useRef(null);
+	const searchParams = new URLSearchParams(location.search);
+	const scheduleID = searchParams.get("schedule");
 	useEffect(() => {
-		const searchParams = new URLSearchParams(location.search);
-		const scheduleID = searchParams.get("schedule");
 		setScheduleOwner(searchParams.get("owner"));
 		const getPresets = async ()=> {
 			let response = await fetch(`http://localhost:3000/events/presets/${scheduleID}`, {
@@ -22,7 +24,6 @@ export const UserDay = () => {
 			})
 			const resp = await response.json()
 			if(response.ok){
-				console.log(resp.presets)
 				setPresets(resp.presets)
 			} else {
 				console.log(resp)
@@ -88,11 +89,21 @@ export const UserDay = () => {
 					})
 				}
 			</div>
-			<div className="m-12">
+			<div className="m-12 overflow-y-auto scrollbar">
 				{
-					presets.map((preset)=>{return(
-						<div key={preset.id} className="bg-white w-full h-1/6">
-							This is a preset
+					presets.map((preset)=>{
+						return(
+						<div key={preset.id} onClick={()=>{
+							if(selectedPreset === preset.id) {
+								setSelectedPreset(null);
+							} else {
+								setSelectedPreset(preset.id);
+							}
+						}} className="bg-blue-400 hover:cursor-pointer transition-all w-full h-auto  text-xl font-semibold mb-3 rounded-xl drop-shadow-sm hover:drop-shadow-xl ">
+							<div className="p-4">
+								{preset.title}
+							</div>
+							{selectedPreset === preset.id && <PresetForm preset={preset} scheduleID={scheduleID}/>}
 						</div>
 					)
 					})
