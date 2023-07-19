@@ -25,7 +25,8 @@ export const UserDay = () => {
 					auth: token
 				}
 			})
-			if(response.ok) {
+			const resp = await response.json();
+			if(response.ok && resp.id === scheduleOwner) {
 				authRef.current = true
 			}
 		}
@@ -82,7 +83,6 @@ export const UserDay = () => {
 				event
 			})
 		})
-		console.log(event)
 		let resp = await response.json();
 		if(!response.ok){
 			alert(resp.message)
@@ -105,6 +105,21 @@ export const UserDay = () => {
 			alert(resp.message)
 		} else {
 			location.reload()
+		}
+	}
+
+	const getAvailableTimes = async () => {
+		let response = await fetch(`http://localhost:3000/schedules/available?schedule=${scheduleID}`, {
+			method: "GET",
+			headers: {
+				"Content-type": "application/json"
+			}
+		})
+		let resp = await response.json();
+		if(!response.ok){
+			alert(resp.message);
+		} else {
+			console.log(resp.availableSlots)
 		}
 	}
 
@@ -134,7 +149,8 @@ export const UserDay = () => {
 						}} className="bg-blue-400 hover:cursor-pointer transition-all w-full h-auto  text-xl font-semibold mb-3 rounded-xl drop-shadow-sm hover:drop-shadow-xl ">
 							<div className="p-4">
 								{preset.title}
-								{authRef.current && <button className="bg-white p-1 hover:bg-zinc-300 rounded-md ml-12" onClick={() => {
+								{authRef.current && <button className="bg-white p-1 hover:bg-zinc-300 rounded-md ml-12" onClick={(e) => {
+									e.stopPropagation();
 									deletePreset(preset.id)
 								}}>Delete</button>}
 							</div>
@@ -154,6 +170,9 @@ export const UserDay = () => {
 						submitForm()
 					}}>Submit</button>
 				</form>
+				<button className="w-full h-[10%] bg-white font-bold text-2xl rounded-sm mt-4" onClick={()=>{
+					getAvailableTimes();
+				}}>Make available time request</button>
 			</div>
 		</div>
 	)

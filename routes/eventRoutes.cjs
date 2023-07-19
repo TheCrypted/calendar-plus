@@ -4,6 +4,7 @@ const Events = require("../models/eventModel.cjs")
 const Intermediary = require("../models/intermediary.cjs")
 const Preset = require("../models/presetModel.cjs")
 const connectDB = require("../config/db.cjs");
+const {stringTimeToInt} = require("../utils/time.cjs");
 const router = express.Router();
 
 router.get("/:scheduleId", async (req, res) => {
@@ -12,6 +13,7 @@ router.get("/:scheduleId", async (req, res) => {
         const schedule = await Schedule.findByPk(scheduleId);
         if(schedule){
             const events = await schedule.getEvents()
+            events.sort((a, b) => stringTimeToInt(a.start) - stringTimeToInt(b.start))
             return res.status(200).json({message: "Schedule events found successfully", events});
         } else {
             return res.status(404).json({message: "Schedule not found"})
