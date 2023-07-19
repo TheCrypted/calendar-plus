@@ -1,5 +1,5 @@
 const sequelize = require("../config/db.cjs");
-const {Model} = require("mongoose");
+const {Model} = require("sequelize");
 
 class Intermediary extends Model {}
 

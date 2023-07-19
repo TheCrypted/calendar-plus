@@ -37,10 +37,8 @@ router.post("/setpresets", authToken, async function(req, res) {
     })
     const schedules = await user.getScheduleModels();
     const presetSchedules = schedules.slice(startIndex, endIndex);
-    const presetCreated = await Preset.create(preset)
-    for(let schedule of presetSchedules){
-        schedule.addPreset(presetCreated)
-    }
+    const presetCreated = await Preset.create(preset);
+    presetCreated.addScheduleModels(presetSchedules);
 
 })
 

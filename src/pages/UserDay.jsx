@@ -3,7 +3,7 @@ import {useEffect, useRef, useState} from "react";
 export const UserDay = () => {
 	const [events, setEvents] = useState([])
 	const [scheduleOwner, setScheduleOwner] = useState(null)
-
+	const [presets, setPresets] = useState([])
 	const emailRef = useRef(null);
 	const titleRef = useRef(null);
 	const descriptionRef = useRef(null);
@@ -13,6 +13,21 @@ export const UserDay = () => {
 		const searchParams = new URLSearchParams(location.search);
 		const scheduleID = searchParams.get("schedule");
 		setScheduleOwner(searchParams.get("owner"));
+		const getPresets = async ()=> {
+			let response = await fetch(`http://localhost:3000/events/presets/${scheduleID}`, {
+				method: "GET",
+				headers: {
+					"Content-type": "application/json"
+				}
+			})
+			const resp = await response.json()
+			if(response.ok){
+				console.log(resp.presets)
+				setPresets(resp.presets)
+			} else {
+				console.log(resp)
+			}
+		}
 		const getEvents = async ()=> {
 			let response = await fetch(`http://localhost:3000/events/${scheduleID}`, {
 				method: "GET",
@@ -28,6 +43,7 @@ export const UserDay = () => {
 			}
 		}
 		getEvents()
+		getPresets()
 	}, [])
 	const submitForm = async () => {
 		const searchParams = new URLSearchParams(location.search);
@@ -73,6 +89,14 @@ export const UserDay = () => {
 				}
 			</div>
 			<div className="m-12">
+				{
+					presets.map((preset)=>{return(
+						<div key={preset.id} className="bg-white w-full h-1/6">
+							This is a preset
+						</div>
+					)
+					})
+				}
 				<form className="bg-red-500 bg-opacity-60 w-full h-4/5 rounded-xl p-2 grid grid-rows-[15%_15%_30%_7.5%_7.5%_10%] gap-4">
 					<input ref={emailRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="email" placeholder="Enter email" />
 					<input ref={titleRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="Enter title" />

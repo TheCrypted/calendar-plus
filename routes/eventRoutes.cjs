@@ -1,6 +1,8 @@
 const express = require('express');
 const Schedule = require("../models/scheduleModel.cjs")
 const Events = require("../models/eventModel.cjs")
+const Intermediary = require("../models/intermediary.cjs")
+const Preset = require("../models/presetModel.cjs")
 const connectDB = require("../config/db.cjs");
 const router = express.Router();
 
@@ -20,6 +22,32 @@ router.get("/:scheduleId", async (req, res) => {
     }
 })
 
+router.get("/presets/:scheduleId", async (req, res) => {
+    try {
+        const scheduleId = parseInt(req.params.scheduleId);
+        const inters = await Intermediary.findAll({
+            where: {
+                scheduleModelId: scheduleId
+            }
+        })
+        let presets = [];
+        for(let model of inters){
+            let preset = await Preset.findOne({
+                where:{
+                    id: model.presetId
+                }
+            })
+            presets.push(preset)
+        }
+        return res.status(200).json({
+            message: "Schedule presets found successfully",
+            presets
+        })
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({message: "Failed to get presets"});
+    }
+})
 router.post("/newevents", async (req, res) => {
     try {
         const {event} = req.body
