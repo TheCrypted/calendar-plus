@@ -13,8 +13,22 @@ export const UserDay = () => {
 	const endRef = useRef(null);
 	const searchParams = new URLSearchParams(location.search);
 	const scheduleID = searchParams.get("schedule");
+	const authRef = useRef(false);
 	useEffect(() => {
+		const token = localStorage.getItem("token");
 		setScheduleOwner(searchParams.get("owner"));
+		const verifyAdminAccess = async () => {
+			let response = await fetch("http://localhost:3000/auth/protected", {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+					auth: token
+				}
+			})
+			if(response.ok) {
+				authRef.current = true
+			}
+		}
 		const getPresets = async ()=> {
 			let response = await fetch(`http://localhost:3000/events/presets/${scheduleID}`, {
 				method: "GET",
@@ -45,6 +59,7 @@ export const UserDay = () => {
 		}
 		getEvents()
 		getPresets()
+		verifyAdminAccess()
 	}, [])
 	const submitForm = async () => {
 		const searchParams = new URLSearchParams(location.search);
@@ -69,6 +84,23 @@ export const UserDay = () => {
 		})
 		console.log(event)
 		let resp = await response.json();
+		if(!response.ok){
+			alert(resp.message)
+		} else {
+			location.reload()
+		}
+	}
+	const deletePreset = async (presetID)=>{
+		const token = localStorage.getItem("token");
+		console.log(`http://localhost:3000/schedules/preset?schedule=${scheduleID}&preset=${presetID}`)
+		let response = await fetch(`http://localhost:3000/schedules/preset?schedule=${scheduleID}&preset=${presetID}`, {
+			method: "DELETE",
+			headers: {
+				"Content-Type": "application/json",
+				auth: token
+			}
+		})
+		let resp = await response.json()
 		if(!response.ok){
 			alert(resp.message)
 		} else {
@@ -102,6 +134,9 @@ export const UserDay = () => {
 						}} className="bg-blue-400 hover:cursor-pointer transition-all w-full h-auto  text-xl font-semibold mb-3 rounded-xl drop-shadow-sm hover:drop-shadow-xl ">
 							<div className="p-4">
 								{preset.title}
+								{authRef.current && <button className="bg-white p-1 hover:bg-zinc-300 rounded-md ml-12" onClick={() => {
+									deletePreset(preset.id)
+								}}>Delete</button>}
 							</div>
 							{selectedPreset === preset.id && <PresetForm preset={preset} scheduleID={scheduleID}/>}
 						</div>
