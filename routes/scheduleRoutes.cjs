@@ -6,7 +6,7 @@ const Intermediary = require("../models/intermediary.cjs")
 const connectDB = require("../config/db.cjs");
 const {authToken} = require("../middleware/auth.cjs");
 const querystring = require("querystring");
-const {stringTimeToInt} = require("../utils/time.cjs");
+const {stringTimeToInt, getAvailableTimes} = require("../utils/time.cjs");
 const router = express.Router();
 connectDB.sync().then((data)=> console.log("DB is synced and ready scheduleRoutes")).catch(err => console.log(err))
 
@@ -78,22 +78,7 @@ router.get("/available", async (req, res) => {
     try {
         const urlParsed = new URL("http:/localhost/schedules" + req.url)
         const scheduleID = parseInt(urlParsed.searchParams.get("schedule"))
-        let schedule = await Schedule.findByPk(scheduleID)
-        let events = await schedule.getEvents()
-        events.sort((a, b) => stringTimeToInt(a.start) - stringTimeToInt(b.start))
-        let availableSlots = []
-        let last = schedule.dayStart
-        for(let event of events){
-            const available = [last, stringTimeToInt(event.start)]
-            last = stringTimeToInt(event.end)
-            if(available[1] - available[0] >= 1){
-
-            }
-            availableSlots.push(available)
-        }
-        if( schedule.dayEnd - last > 1.5){
-            availableSlots.push([last, schedule.dayEnd])
-        }
+        let availableSlots = await getAvailableTimes(scheduleID)
         return res.status(200).json({message:"Successfully collated available times", availableSlots})
     } catch (e){
         console.log(e)

@@ -50,6 +50,11 @@ const init = async()=>{
     // await configBasic.addScheduleModels(schedules);
     // const config = await schedules[0].getConfig();
     // console.log(config)
+    await Event.destroy({
+        where: {
+            title: "Auto test"
+        }
+    })
     app.listen(PORT, ()=>{
         console.log(`App is running on Port: ${PORT}`);
     })
