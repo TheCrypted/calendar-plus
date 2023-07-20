@@ -26,7 +26,8 @@ export const UserDay = () => {
 				}
 			})
 			const resp = await response.json();
-			if(response.ok && resp.id === scheduleOwner) {
+			let origOwner = searchParams.get("owner");
+			if(response.ok && resp.user.id === parseInt(origOwner)) {
 				authRef.current = true
 			}
 		}

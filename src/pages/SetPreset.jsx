@@ -2,9 +2,16 @@ import {useEffect, useRef, useState} from "react";
 import {useNavigate} from "react-router-dom";
 
 export const SetPreset = () => {
+	// Preset Form
 	const titleRef = useRef()
 	const descriptionRef = useRef()
 	const durationRef = useRef()
+	// Config form
+	const breakRef = useRef()
+	const intervalRef = useRef()
+	const preferenceRef = useRef()
+	const privateRef = useRef()
+
 	const [user, setUser] = useState(null);
 	const [schedules, setSchedules] = useState([]);
 	const startIndex = useRef(0)
@@ -75,6 +82,35 @@ export const SetPreset = () => {
 		}
 	}
 
+	const updateConfig = async ()=>{
+		const breakDuration = breakRef.current.value.split("-")[1]
+		const config = {
+			isPrivate: Boolean(privateRef.current.value),
+			preferredStart: preferenceRef.current.value.split("-")[0],
+			preferredEnd: preferenceRef.current.value.split("-")[1],
+			breakStart: breakRef.current.value.split("-")[0],
+			breakDuration: parseInt(breakDuration.split(":")[0]) - (parseInt(breakDuration.split(":")[1])/60),
+			minimumInterval: parseFloat(intervalRef.current.value)
+		}
+		let response = await fetch("http://localhost:3000/config/update", {
+			method: 'PUT',
+			headers: {
+				"Content-Type": "application/json",
+				auth: token
+			}, body: JSON.stringify({
+				config,
+				scheduleStart: startIndex.current,
+				scheduleEnd: endIndex.current
+			})
+		})
+		const resp = await response.json();
+		if(response.ok){
+			console.log(resp.userSchedules)
+		} else {
+			console.log(resp.message)
+		}
+	}
+
 	return (
 		<div className="w-full h-full bg-zinc-800 grid grid-cols-[40%_60%]">
 			<div className="bg-white m-12 rounded-xl overflow-y-auto scrollbar drop-shadow-xl hover:drop-shadow-2xl transition-all ">
@@ -99,12 +135,13 @@ export const SetPreset = () => {
 					}}>Submit</button>
 				</form>
 				<form className="bg-red-500 bg-opacity-60 w-full h-3/5 rounded-xl p-2 grid grid-rows-[17.5%_17.5%_17.5%_17.5%_17.5%] gap-4">
-					<input className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="Lunch time" />
-					<input className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="Minimum break time" />
-					<input className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="Preferred meeting period" />
-					<input className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="Private schedule"/>
+					<input ref={breakRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="Lunch time (HH:MM-Duration(HH:MM))" />
+					<input ref={intervalRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="Minimum interval time (Decimal)" />
+					<input ref={preferenceRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="Preferred meeting period (HH:MM-HH:MM)" />
+					<input ref={privateRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="Private schedule"/>
 					<button type="submit" className="bg-white rounded-md drop-shadow-md hover:drop-shadow-2xl w-full h-full text-2xl font-bold" onClick={(e)=>{
 						e.preventDefault();
+						updateConfig()
 					}}>Submit</button>
 				</form>
 			</div>

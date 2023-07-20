@@ -33,10 +33,9 @@ Config.init({
     sequelize, modelName: "config"
 })
 
-Config.belongsTo(Schedule);
-Schedule.hasOne(Config);
+Config.hasMany(Schedule);
+Schedule.belongsTo(Config);
 
-// TODO create base configs for all preexisting schedules
-// TODO create new route handler for config changes that can just intereact with the db through the preset page
 // TODO make all the necessary routes operate according to config
+
 module.exports = Config
