@@ -126,7 +126,7 @@ export const SetPreset = () => {
 			description: descriptionEventRef.current.value,
 			scheduleModelId: "",
 			start: startRef.current.value,
-			end: startRef.current.value
+			end: endRef.current.value
 		}
 		let response = await fetch(`http://localhost:3000/events/multiple?start=${startIndex.current}&end=${endIndex.current}`, {
 			method: "POST",

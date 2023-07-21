@@ -36,6 +36,5 @@ Config.init({
 Config.hasMany(Schedule);
 Schedule.belongsTo(Config);
 
-// TODO make all the necessary routes operate according to config
 
 module.exports = Config

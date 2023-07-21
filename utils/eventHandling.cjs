@@ -2,13 +2,13 @@ const {getAvailableTimes, stringTimeToInt, intTimeToString} = require("./time.cj
 const Schedule = require("../models/scheduleModel.cjs");
 const {checkAuth} = require("../middleware/auth.cjs");
 const Events = require("../models/eventModel.cjs");
+const Config = require("../models/configModel.cjs");
 
 async function pushEventToSchedule(event, token){
     let availableSlots = await getAvailableTimes(event.scheduleModelId);
     const schedule = await Schedule.findByPk(event.scheduleModelId);
     let config = await schedule.getConfig();
     const authStatus = await checkAuth(token)
-    console.log(authStatus.id, schedule.userModelId)
     if (!config.isPrivate || authStatus.id === schedule.userModelId) {
         let pStart, pEnd
         let preferenceExists = !!config.preferredStart
@@ -34,7 +34,6 @@ async function pushEventToSchedule(event, token){
         if (newEvent.start === event.start) {
             return {message: "No available time to book event", ok: false}
         }
-        // console.log(newEvent)
         await Events.create(newEvent)
     } else {
         return {message: "Not authorized to book event", ok: false}
@@ -42,4 +41,38 @@ async function pushEventToSchedule(event, token){
     return {message: "Success", ok: true}
 }
 
-module.exports = {pushEventToSchedule}
+async function pushSpecEventToSchedule(event, token){
+    const authStatus = await checkAuth(token)
+    let newEvent = JSON.parse(JSON.stringify(event))
+    let schedule = await Schedule.findOne({
+        where: {
+            id: event.scheduleModelId
+        },
+        include: {
+            model: Config,
+            attributes: ["isPrivate", "minimumInterval"]
+        }
+    })
+    if(!schedule.dataValues.config.isPrivate || authStatus.id === schedule.dataValues.userModelId){
+        const availableSlots = await getAvailableTimes(schedule.id)
+        const eventStart = stringTimeToInt(newEvent.start)
+        let slotFound = false
+        newEvent.end = intTimeToString(eventStart + parseInt(newEvent.end))
+        const eventEnd = stringTimeToInt(newEvent.end)
+        for(let slot of availableSlots){
+            if( eventStart > slot[0] && eventEnd < slot[1]){
+                await Events.create(newEvent)
+                slotFound = true
+                break;
+            }
+        }
+        if(!slotFound){
+            return {message: "No available time to book event", ok: false}
+        }
+    } else {
+        return {message: "Not authorized to create event", ok: false}
+    }
+    return {message: "Success", ok: true}
+}
+
+module.exports = {pushEventToSchedule, pushSpecEventToSchedule}
