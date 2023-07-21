@@ -7,6 +7,7 @@ const connectDB = require("../config/db.cjs");
 const {stringTimeToInt, getAvailableTimes, intTimeToString} = require("../utils/time.cjs");
 const {checkAuth, authToken} = require("../middleware/auth.cjs");
 const User = require("../models/userModel.cjs");
+const {pushEventToSchedule} = require("../utils/eventHandling.cjs");
 const router = express.Router();
 
 router.get("/:scheduleId", async (req, res) => {
@@ -62,42 +63,12 @@ router.post("/newevents", async (req, res) => {
     try {
         const {event} = req.body
         if(event.start !== "auto") {
-            // TODO: change this so that when the event is created through a preset the Event.end works is changed to required HH:MM format
+            // TODO: change this so you verify that the time is even acceptable
             await Events.create(event);
         } else {
-            let availableSlots = await getAvailableTimes(event.scheduleModelId);
-            const schedule = await Schedule.findByPk(event.scheduleModelId);
-            let config = await schedule.getConfig();
-            const authStatus = await checkAuth(req.headers.auth)
-            if(!config.isPrivate || authStatus.id === schedule.userModelId) {
-                let pStart, pEnd
-                let preferenceExists = !!config.preferredStart
-                if(preferenceExists) {
-                    pStart = stringTimeToInt(config.preferredStart)
-                    pEnd =  stringTimeToInt(config.preferredEnd)
-                }
-                let newEvent = JSON.parse(JSON.stringify(event))
-                availableSlots.reverse()
-                for (let slot of availableSlots) {
-                    if (slot[1] - slot[0] >= parseFloat(event.end) + config.minimumInterval * 2) {
-                        newEvent.start = intTimeToString(slot[0] + config.minimumInterval)
-                        newEvent.end = intTimeToString(stringTimeToInt(newEvent.start) + parseFloat(event.end))
-                        if (preferenceExists && slot[0] > pStart) {
-                            break;
-                        } else if (preferenceExists && slot[1] - pStart > parseFloat(event.end) + config.minimumInterval * 2) {
-                            newEvent.start = intTimeToString(pStart)
-                            newEvent.end = intTimeToString(stringTimeToInt(newEvent.start) + parseFloat(event.end))
-                            break;
-                        }
-                    }
-                }
-                if (newEvent.start === event.start) {
-                    return res.status(404).json({message: "No available time to book event"})
-                }
-                // console.log(newEvent)
-                await Events.create(newEvent)
-            } else {
-                return res.status(401).json({message: "Not authorized to book event"})
+            let answer = await pushEventToSchedule(event, req.headers.auth)
+            if (!answer.ok){
+                return res.status(404).json({message: answer.message});
             }
         }
         return res.status(200).json({message: "Event logged successfully"});
@@ -109,12 +80,22 @@ router.post("/newevents", async (req, res) => {
 
 router.post("/multiple", authToken, async(req, res) => {
     try {
-
+        let {event} = req.body
+        event.userModelId = parseInt(req.user.id)
+        const urlParsed = new URL("http:/localhost/events" + req.url);
+        // const user = User.findByPk(parseInt(req.user.id));
+        const schedules = Schedule.findAll({
+            where: {
+                userModelId: parseInt(req.user.id)
+            },
+            offset: parseInt(urlParsed.searchParams.get("start")),
+            limit: parseInt(urlParsed.searchParams.get("end"))
+        })
+        return res.status(200).json({message: "Events created successfully", schedules})
     } catch (e) {
         console.log(e)
         return res.status(500).json({message: "Failed to create events"})
     }
-
 })
 
 module.exports = router;

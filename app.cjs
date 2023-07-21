@@ -7,7 +7,7 @@ const configRoutes = require("./routes/configRoutes.cjs");
 const connectDB = require("./config/db.cjs")
 const {urlencoded} = require("express");
 const Event = require("./models/eventModel.cjs")
-const {DataTypes} = require("sequelize");
+const {DataTypes, Op} = require("sequelize");
 const User = require("./models/userModel.cjs");
 const Config = require("./models/configModel.cjs");
 const Schedule = require("./models/scheduleModel.cjs");
@@ -52,7 +52,11 @@ const init = async()=>{
     // console.log(config)
     await Event.destroy({
         where: {
-            title: "Auto test"
+            [Op.or]: [
+                {title: "Auto test"},
+                {title: "Testing Presets"}
+            ]
+
         }
     })
     app.listen(PORT, ()=>{

@@ -11,6 +11,12 @@ export const SetPreset = () => {
 	const intervalRef = useRef()
 	const preferenceRef = useRef()
 	const privateRef = useRef()
+	// Bulk event form
+	const emailRef = useRef(null);
+	const titleEventRef = useRef(null);
+	const descriptionEventRef = useRef(null);
+	const startRef = useRef(null);
+	const endRef = useRef(null);
 
 	const [user, setUser] = useState(null);
 	const [schedules, setSchedules] = useState([]);
@@ -111,6 +117,33 @@ export const SetPreset = () => {
 		}
 	}
 
+	const bulkCreateEvent = async () => {
+		const token = localStorage.getItem("token")
+		const event = {
+			clientEmail: emailRef.current.value,
+			userModelId: "",
+			title: titleEventRef.current.value,
+			description: descriptionEventRef.current.value,
+			scheduleModelId: "",
+			start: startRef.current.value,
+			end: startRef.current.value
+		}
+		let response = await fetch(`http://localhost:3000/events/multiple?start=${startIndex.current}&end=${endIndex.current}`, {
+			method: "POST",
+			headers: {
+				"Content-type": "application/json",
+				auth: token
+			},
+			body: JSON.stringify({event})
+		})
+		const resp = await response.json()
+		if(response.ok){
+			console.log(resp)
+		} else {
+			alert(resp.message)
+		}
+	}
+
 	return (
 		<div className="w-full h-full bg-zinc-800 grid grid-cols-[40%_60%]">
 			<div className="bg-white m-12 rounded-xl overflow-y-auto scrollbar drop-shadow-xl hover:drop-shadow-2xl transition-all ">
@@ -135,7 +168,7 @@ export const SetPreset = () => {
 						createNewPresets()
 					}}>Submit</button>
 				</form>
-				<form className="bg-red-500 text-white text-2xl font-semibold bg-opacity-60 w-full h-3/5 rounded-xl overflow-y-auto scrollbar p-2 grid grid-rows-[10%_17.5%_17.5%_17.5%_17.5%_17.5%] gap-4">
+				<form className="mb-12 bg-red-500 text-white text-2xl font-semibold bg-opacity-60 w-full h-3/5 rounded-xl overflow-y-auto scrollbar p-2 grid grid-rows-[10%_17.5%_17.5%_17.5%_17.5%_17.5%] gap-4">
 					Change config
 					<input ref={breakRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="Lunch time (HH:MM-Duration(HH:MM))" />
 					<input ref={intervalRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="Minimum interval time (Decimal)" />
@@ -144,6 +177,18 @@ export const SetPreset = () => {
 					<button type="submit" className="bg-white text-black rounded-md drop-shadow-md hover:drop-shadow-2xl w-full h-full text-2xl font-bold" onClick={(e)=>{
 						e.preventDefault();
 						updateConfig()
+					}}>Submit</button>
+				</form>
+				<form className="bg-red-500 text-white text-2xl font-semibold bg-opacity-60 w-full h-3/5 rounded-xl overflow-y-auto scrollbar p-2 grid grid-rows-[10%_17.5%_17.5%_17.5%_17.5%_17.5%_17.5%] gap-4">
+					Bulk create event
+					<input ref={emailRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="Enter email" />
+					<input ref={titleEventRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="Enter title" />
+					<input ref={descriptionEventRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="Enter description" />
+					<input ref={startRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="Start time"/>
+					<input ref={endRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="duration"/>
+					<button type="submit" className="bg-white text-black rounded-md drop-shadow-md hover:drop-shadow-2xl w-full h-full text-2xl font-bold" onClick={(e)=>{
+						e.preventDefault();
+						bulkCreateEvent()
 					}}>Submit</button>
 				</form>
 			</div>

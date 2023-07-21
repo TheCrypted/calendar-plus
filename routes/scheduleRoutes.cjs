@@ -102,7 +102,6 @@ router.delete("/:scheduleID", authToken, async(req, res) => {
         console.log(e)
         return res.status(404).json({message: "There was an error deleting events for the schedule"})
     }
-
 })
 
 router.get("/available", async (req, res) => {

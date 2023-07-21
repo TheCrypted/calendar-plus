@@ -12,9 +12,10 @@ export const PresetForm = ({preset, scheduleID}) => {
 		}>
 			<input ref={emailRef} className="focus:outline-none bg-zinc-800 text-white pl-2 w-full mb-2 mt-3 p-2 font-semibold rounded-md" placeholder="Enter email" type="text" />
 			<input ref={addRef} className="focus:outline-none bg-zinc-800 text-white pl-2 w-full mb-2 p-2 font-semibold rounded-md" placeholder="Any additional information" type="text" />
-			<input ref={timeRef} className="focus:outline-none bg-zinc-800 text-white pl-2 w-full mb-2 p-2 font-semibold rounded-md" type="time" />
+			<input ref={timeRef} className="focus:outline-none bg-zinc-800 text-white pl-2 w-full mb-2 p-2 font-semibold rounded-md" type="text" />
 			<button type="submit" className="bg-white p-2 w-1/2 rounded-md" onClick={async (e) => {
 				e.preventDefault()
+				let token = localStorage.getItem("token")
 				let description = addRef.current.value === "" ? preset.description : addRef.current.value
 				const event = {
 					clientEmail: emailRef.current.value,
@@ -28,7 +29,8 @@ export const PresetForm = ({preset, scheduleID}) => {
 				let response = await fetch(`http://localhost:3000/events/newevents`, {
 					method: "POST",
 					headers: {
-						"Content-type": "application/json"
+						"Content-type": "application/json",
+						auth: token
 					}, body: JSON.stringify({
 						event
 					})
