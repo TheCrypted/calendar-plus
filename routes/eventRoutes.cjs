@@ -62,16 +62,18 @@ router.post("/newevents", async (req, res) => {
             const schedule = await Schedule.findByPk(event.scheduleModelId);
             let config = await schedule.getConfig();
             let pStart = stringTimeToInt(config.preferredStart)
+            let pEnd = stringTimeToInt(config.preferredEnd)
             let newEvent = JSON.parse(JSON.stringify(event))
             availableSlots.reverse()
             for(let slot of availableSlots) {
-                console.log(pStart)
-                if(slot[1]-slot[0] > parseFloat(event.end) + config.minimumInterval*2){
+                console.log(availableSlots)
+                if(slot[1]-slot[0] >= parseFloat(event.end) + config.minimumInterval*2){
                     newEvent.start = intTimeToString(slot[0] + config.minimumInterval)
                     newEvent.end = intTimeToString(stringTimeToInt(newEvent.start) + parseFloat(event.end))
                     if(slot[0] > pStart) {
                         break;
-                    } else {
+                    }
+                    else if (slot[1] - pStart > parseFloat(event.end) + config.minimumInterval*2){
                         newEvent.start = intTimeToString(pStart)
                         newEvent.end = intTimeToString(stringTimeToInt(newEvent.start) + parseFloat(event.end))
                         break;

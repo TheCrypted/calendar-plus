@@ -3,12 +3,20 @@ const Schedule = require("../models/scheduleModel.cjs")
 const User = require("../models/userModel.cjs")
 const Preset = require("../models/presetModel.cjs")
 const Intermediary = require("../models/intermediary.cjs")
+const Events = require("../models/eventModel.cjs")
 const connectDB = require("../config/db.cjs");
 const {authToken} = require("../middleware/auth.cjs");
 const querystring = require("querystring");
 const {stringTimeToInt, getAvailableTimes} = require("../utils/time.cjs");
+const {sendEmail} = require("../utils/mailer.cjs");
 const router = express.Router();
 connectDB.sync().then((data)=> console.log("DB is synced and ready scheduleRoutes")).catch(err => console.log(err))
+
+// TODO: change the all event get so that it doesnt return an event if the schedules config says private
+// TODO: create a delete button that clears all events
+// TODO: use nodemailer to inform all event email holders that their event has been deleted
+// TODO: make a bulk create function that can add events for all the selected schedules at once
+// TODO: email notification on event booking
 
 router.get("/all", authToken, async function(req, res) {
     try{
@@ -66,12 +74,37 @@ router.delete("/preset", authToken, async function(req, res) {
             })
             return res.status(200).json({message: "Successfully deleted preset"})
         } else {
-            return res.status(200).json({message: "Unauthorized to delete"})
+            return res.status(401).json({message: "Unauthorized to delete"})
         }
     } catch (e){
         console.log(e)
         return res.status(404).json({message: "There was an error deleting presets"})
     }
+})
+
+router.delete("/:scheduleID", authToken, async(req, res) => {
+    try {
+        const scheduleID = parseInt(req.params.scheduleID);
+        const schedule = await Schedule.findByPk(scheduleID);
+        const subject = `Your booking on ${schedule.day} has been cancelled `
+        if (req.user.id !== schedule.userModelId) {
+            return res.status(401).json({message: "Unauthorized to clear schedule"})
+        }
+        const events = await Events.findAll({
+            where: {
+                scheduleModelId: scheduleID
+            }
+        })
+        for( let event of events ) {
+            await sendEmail(event.clientEmail, req.user.name, subject, "cancellation");
+            await event.destroy()
+        }
+        return res.status(200).json({message: "Successfully deleted events for the day"})
+    } catch (e) {
+        console.log(e)
+        return res.status(404).json({message: "There was an error deleting events for the schedule"})
+    }
+
 })
 
 router.get("/available", async (req, res) => {

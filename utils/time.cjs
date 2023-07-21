@@ -27,7 +27,7 @@ async function getAvailableTimes(scheduleID) {
             }
             availableSlots.push(available)
         }
-        if (schedule.dayEnd - last > 1.5) {
+        if (schedule.dayEnd - last > 0.5) {
             availableSlots.push([last, schedule.dayEnd])
         }
         return availableSlots

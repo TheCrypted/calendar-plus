@@ -93,7 +93,6 @@ export const UserDay = () => {
 	}
 	const deletePreset = async (presetID)=>{
 		const token = localStorage.getItem("token");
-		console.log(`http://localhost:3000/schedules/preset?schedule=${scheduleID}&preset=${presetID}`)
 		let response = await fetch(`http://localhost:3000/schedules/preset?schedule=${scheduleID}&preset=${presetID}`, {
 			method: "DELETE",
 			headers: {
@@ -108,7 +107,6 @@ export const UserDay = () => {
 			location.reload()
 		}
 	}
-
 	const getAvailableTimes = async () => {
 		let response = await fetch(`http://localhost:3000/schedules/available?schedule=${scheduleID}`, {
 			method: "GET",
@@ -123,6 +121,22 @@ export const UserDay = () => {
 			console.log(resp.availableSlots)
 		}
 	}
+	const clearSchedule = async () => {
+		const token = localStorage.getItem("token");
+		let response = await fetch(`http://localhost:3000/schedules/${scheduleID}`, {
+			method: "DELETE",
+			headers: {
+				"Content-type": "application/json",
+				auth: token
+			}
+		})
+		let resp = await response.json();
+		if(!response.ok){
+			alert(resp.message)
+		}
+		location.reload()
+	}
+
 
 	return (
 		<div className="w-full h-full bg-zinc-800 grid grid-cols-[60%_40%]">
@@ -174,6 +188,9 @@ export const UserDay = () => {
 				<button className="w-full h-[10%] bg-white font-bold text-2xl rounded-sm mt-4" onClick={()=>{
 					getAvailableTimes();
 				}}>Make available time request</button>
+				{authRef.current && <button className="w-full h-[10%] bg-red-400 font-bold text-2xl rounded-sm mt-4" onClick={() => {
+					clearSchedule();
+				}}>Clear Schedule</button>}
 			</div>
 		</div>
 	)
