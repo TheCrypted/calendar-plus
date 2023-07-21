@@ -124,22 +124,24 @@ export const SetPreset = () => {
 					})
 				}
 			</div>
-			<div className="m-12 overflow-y-auto scrollbar">
-				<form className="bg-red-500 bg-opacity-60 w-full h-3/5 rounded-xl p-2 grid grid-rows-[17.5%_32.5%_17.5%_17.5%] gap-4 mb-12">
+			<div className="m-12 overflow-y-auto no-scrollbar">
+				<form className="bg-red-500 text-white text-2xl font-semibold bg-opacity-60 w-full h-3/5 rounded-xl overflow-y-auto scrollbar p-2 grid grid-rows-[10%_17.5%_32.5%_17.5%_17.5%] gap-4 mb-12">
+					Create preset
 					<input ref={titleRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="Enter title" />
 					<input ref={descriptionRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="Enter description" />
 					<input ref={durationRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="Enter duration"/>
-					<button type="submit" className="bg-white rounded-md drop-shadow-md hover:drop-shadow-2xl w-full h-full text-2xl font-bold" onClick={(e)=>{
+					<button type="submit" className="bg-white text-black rounded-md drop-shadow-md hover:drop-shadow-2xl w-full h-full text-2xl font-bold" onClick={(e)=>{
 						e.preventDefault();
 						createNewPresets()
 					}}>Submit</button>
 				</form>
-				<form className="bg-red-500 bg-opacity-60 w-full h-3/5 rounded-xl p-2 grid grid-rows-[17.5%_17.5%_17.5%_17.5%_17.5%] gap-4">
+				<form className="bg-red-500 text-white text-2xl font-semibold bg-opacity-60 w-full h-3/5 rounded-xl overflow-y-auto scrollbar p-2 grid grid-rows-[10%_17.5%_17.5%_17.5%_17.5%_17.5%] gap-4">
+					Change config
 					<input ref={breakRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="Lunch time (HH:MM-Duration(HH:MM))" />
 					<input ref={intervalRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="Minimum interval time (Decimal)" />
 					<input ref={preferenceRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="Preferred meeting period (HH:MM-HH:MM)" />
 					<input ref={privateRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="Private schedule"/>
-					<button type="submit" className="bg-white rounded-md drop-shadow-md hover:drop-shadow-2xl w-full h-full text-2xl font-bold" onClick={(e)=>{
+					<button type="submit" className="bg-white text-black rounded-md drop-shadow-md hover:drop-shadow-2xl w-full h-full text-2xl font-bold" onClick={(e)=>{
 						e.preventDefault();
 						updateConfig()
 					}}>Submit</button>

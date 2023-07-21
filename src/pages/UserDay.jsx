@@ -14,6 +14,7 @@ export const UserDay = () => {
 	const searchParams = new URLSearchParams(location.search);
 	const scheduleID = searchParams.get("schedule");
 	const authRef = useRef(false);
+	const privateRef = useRef(false);
 	useEffect(() => {
 		const token = localStorage.getItem("token");
 		setScheduleOwner(searchParams.get("owner"));
@@ -46,16 +47,21 @@ export const UserDay = () => {
 			}
 		}
 		const getEvents = async ()=> {
+			const token = localStorage.getItem("token")
 			let response = await fetch(`http://localhost:3000/events/${scheduleID}`, {
 				method: "GET",
 				headers: {
-					"content-type": "application/json"
+					"Content-type": "application/json",
+					auth: token
 				}
 			})
 			const resp = await response.json()
 			if(response.ok){
 				setEvents(resp.events)
 			} else {
+				if(resp.isPrivate){
+					privateRef.current = true
+				}
 				console.log(resp)
 			}
 		}
@@ -65,6 +71,7 @@ export const UserDay = () => {
 	}, [])
 	const submitForm = async () => {
 		const searchParams = new URLSearchParams(location.search);
+		const token = localStorage.getItem("token")
 		const scheduleID = searchParams.get("schedule");
 		const event = {
 			clientEmail: emailRef.current.value,
@@ -78,7 +85,8 @@ export const UserDay = () => {
 		let response = await fetch("http://localhost:3000/events/newevents", {
 			method: "POST",
 			headers: {
-				"Content-type": "application/json"
+				"Content-type": "application/json",
+				auth: token
 			},
 			body: JSON.stringify({
 				event
@@ -139,6 +147,15 @@ export const UserDay = () => {
 
 
 	return (
+		<>
+		{
+			privateRef.current &&
+			<div className="absolute backdrop-blur-sm z-40 w-full h-full bg-black bg-opacity-80 flex items-center justify-center">
+				<div className="bg-red-500 text-white rounded-xl w-1/4 h-1/5 font-bold text-2xl flex items-center justify-center">
+					Schedule is private!
+				</div>
+			</div>
+		}
 		<div className="w-full h-full bg-zinc-800 grid grid-cols-[60%_40%]">
 			<div className="bg-white m-12 rounded-xl overflow-y-auto scrollbar drop-shadow-xl hover:drop-shadow-2xl transition-all ">
 				{
@@ -193,5 +210,6 @@ export const UserDay = () => {
 				}}>Clear Schedule</button>}
 			</div>
 		</div>
+	</>
 	)
 }

@@ -7,14 +7,12 @@ const Events = require("../models/eventModel.cjs")
 const connectDB = require("../config/db.cjs");
 const {authToken} = require("../middleware/auth.cjs");
 const querystring = require("querystring");
-const {stringTimeToInt, getAvailableTimes} = require("../utils/time.cjs");
+const {stringTimeToInt, getAvailableTimes, formatDateToDDMMYYYY, getDay} = require("../utils/time.cjs");
 const {sendEmail} = require("../utils/mailer.cjs");
 const router = express.Router();
 connectDB.sync().then((data)=> console.log("DB is synced and ready scheduleRoutes")).catch(err => console.log(err))
 
-// TODO: change the all event get so that it doesnt return an event if the schedules config says private
-// TODO: create a delete button that clears all events
-// TODO: use nodemailer to inform all event email holders that their event has been deleted
+
 // TODO: make a bulk create function that can add events for all the selected schedules at once
 // TODO: email notification on event booking
 
@@ -86,7 +84,7 @@ router.delete("/:scheduleID", authToken, async(req, res) => {
     try {
         const scheduleID = parseInt(req.params.scheduleID);
         const schedule = await Schedule.findByPk(scheduleID);
-        const subject = `Your booking on ${schedule.day} has been cancelled `
+        const subject = `Your booking on ${getDay(schedule.day)}, ${formatDateToDDMMYYYY(schedule.day)} has been cancelled `
         if (req.user.id !== schedule.userModelId) {
             return res.status(401).json({message: "Unauthorized to clear schedule"})
         }
@@ -118,5 +116,6 @@ router.get("/available", async (req, res) => {
         return res.status(404).json({message: "There was an error getting available times"})
     }
 })
+
 
 module.exports = router;

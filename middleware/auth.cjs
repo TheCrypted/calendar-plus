@@ -28,4 +28,11 @@ const authToken = (req, res, next) => {
     }
 }
 
-module.exports = {authToken, genToken}
+const checkAuth = async (token) => {
+    try {
+        return await jwt.verify(token, SECRET_KEY)
+    } catch (e) {
+        return false
+    }
+}
+module.exports = {authToken, genToken, checkAuth}
