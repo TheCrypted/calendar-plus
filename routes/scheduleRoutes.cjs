@@ -4,6 +4,7 @@ const User = require("../models/userModel.cjs")
 const Preset = require("../models/presetModel.cjs")
 const Intermediary = require("../models/intermediary.cjs")
 const Events = require("../models/eventModel.cjs")
+const Config = require("../models/configModel.cjs")
 const connectDB = require("../config/db.cjs");
 const {authToken} = require("../middleware/auth.cjs");
 const querystring = require("querystring");
@@ -13,7 +14,6 @@ const router = express.Router();
 connectDB.sync().then((data)=> console.log("DB is synced and ready scheduleRoutes")).catch(err => console.log(err))
 
 
-// TODO: make a bulk create function that can add events for all the selected schedules at once
 // TODO: email notification on event booking
 
 router.get("/all", authToken, async function(req, res) {
@@ -26,8 +26,14 @@ router.get("/all", authToken, async function(req, res) {
         });
         if(user) {
             const userSchedules = await user.getScheduleModels();
+            let configs = []
+            for(let schedule of userSchedules){
+                let config = await schedule.getConfig();
+                configs.push(config)
+            }
             return res.status(200).json({
-                userSchedules
+                userSchedules,
+                configs
             })
         } else {
             return res.status(404).json({message: "User not found"})
@@ -112,7 +118,45 @@ router.get("/available", async (req, res) => {
         return res.status(200).json({message:"Successfully collated available times", availableSlots})
     } catch (e){
         console.log(e)
-        return res.status(404).json({message: "There was an error getting available times"})
+        return res.status(500).json({message: "There was an error getting available times"})
+    }
+})
+
+// TODO: make an endpoint or modify an existing one that automatically makes weekends private or prevents addition
+router.post("/create", authToken, async (req, res) => {
+    try {
+        let existingSchedules = await Schedule.findAll({
+            where: {
+                userModelId: req.user.id
+            },
+            order: [["createdAt", "DESC"]]
+        })
+        const date = existingSchedules.length > 0 ? existingSchedules[0].day : req.body.date
+        const {amount} = req.body
+        let createdSchedules = []
+        let userScheduleInit = {
+                userModelId: req.user.id,
+                day: date,
+                dayStart: 8,
+                dayEnd: 18
+            }
+            // TODO: Seems to be some issue here wherein the date depends on whatever the amount variable is and doesnt add successive dates but just adds the same date
+        const configNew = await Config.create({
+                isPrivate: false,
+                minimumInterval: 0
+        })
+        for (let i = 0; i < amount; i++) {
+            date.setDate(date.getDate() + 1)
+            userScheduleInit.day = date
+            let newSchedule = await Schedule.create(userScheduleInit)
+            createdSchedules.push(newSchedule)
+        }
+        await configNew.addScheduleModels(createdSchedules)
+
+        return res.status(200).json({message: "Successfully created schedules", createdSchedules})
+    } catch (e){
+        console.log(e)
+        return res.status(500).json({message: "There was an error creating schedules for the next month"})
     }
 })
 

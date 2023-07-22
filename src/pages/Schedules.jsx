@@ -5,7 +5,9 @@ export const Schedules = () => {
 	const [user, setUser] = useState(null)
 	const [schedules, setSchedules] = useState(null)
 	const selectorRef = useRef(false)
+	const numberScheduleRef = useRef(0)
 	const navigate = useNavigate()
+
 	useEffect(() => {
 		async function getUser() {
 		const token = localStorage.getItem('token')
@@ -53,7 +55,6 @@ export const Schedules = () => {
 			setSelected(new Array(schedules.length).fill(false))
 		}
 	}, [schedules])
-
 	const [selected, setSelected] = useState([])
 	const currentlySelecting = useRef(null)
 	const handleSelect = (index) => {
@@ -73,6 +74,28 @@ export const Schedules = () => {
 		currentlySelecting.current = currentlySelecting.current ? null : index
 	}
 
+	const createNewSchedules = async()=>{
+		const token = localStorage.getItem('token')
+		if (numberScheduleRef.current.value > 60) return
+		let response = await fetch("http://localhost:3000/schedules/create", {
+			method: "POST",
+			headers: {
+				"Content-type": "application/json",
+				auth: token
+			}, body: JSON.stringify({
+				date: new Date(),
+				amount: parseInt(numberScheduleRef.current.value)
+			})
+		})
+		let resp = await response.json()
+		if(response.ok){
+			console.log(resp)
+			setSchedules((existingSchedules) => [...existingSchedules, ...resp.createdSchedules])
+		} else {
+			alert(resp.message)
+		}
+	}
+
 	return (
 		<div className="bg-black w-full h-full text-white">
 			<div className="bg-black text-black flex gap-4 w-full h-1/5">
@@ -89,7 +112,8 @@ export const Schedules = () => {
 					Set Preset for Selection
 				</button>
 			</div>
-			{schedules && <div className="w-full bg-zinc-300 scrollbar flex justify-center p-4 gap-4 overflow-y-auto h-4/5 flex-wrap">
+			{schedules &&
+				<div className="w-full bg-zinc-300 scrollbar flex justify-center p-4 gap-4 overflow-y-auto h-4/5 flex-wrap">
 				{
 					schedules.map((schedule, index) => {
 						let bgColor = "bg-white"
@@ -107,6 +131,21 @@ export const Schedules = () => {
 						)
 					})
 				}
+				<div className="w-full h-1/6 flex items-center justify-center mt-4 mb-4">
+					<form className=" flex items-center justify-center bg-blue-500 rounded-xl h-5/6 p-4 w-1/3 drop-shadow-md hover:drop-shadow-xl transition-all border-4 text-2xl  font-semibold border-white">
+						Create
+						<input className="text-white hide-spin-buttons focus:outline-none p-2 ml-3 mr-3 w-1/5  rounded-md bg-blue-700 text-white" placeholder="0" type="number" ref={numberScheduleRef} />
+						Schedules
+						<button type="submit" onClick={(e)=> {
+							e.preventDefault();
+							createNewSchedules()
+						}} className=" ml-4 text-blue-500 bg-white h-4/5 w-[10%] rounded-md hover:drop-shadow-xl transition-all flex justify-center items-center">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-7 h-7"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/>
+							</svg>
+						</button>
+					</form>
+
+				</div>
 			</div>}
 		</div>
 	)

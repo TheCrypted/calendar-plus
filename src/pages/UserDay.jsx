@@ -145,6 +145,22 @@ export const UserDay = () => {
 		location.reload()
 	}
 
+	const notifyEvent = async (eventID) => {
+		const token = localStorage.getItem("token");
+		let response = await fetch(`http://localhost:3000/events/notify?id=${eventID}`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				auth: token
+			}
+		})
+		let resp = await response.json();
+		if(response.ok){
+			console.log(resp)
+		} else {
+			alert(resp.message)
+		}
+	}
 
 	return (
 		<>
@@ -161,8 +177,11 @@ export const UserDay = () => {
 				{
 					events.map((event)=>{
 						return (
-							<div key={event.id} className="bg-zinc-200 p-4 border-white border-2 hover:h-1/5 hover:bg-zinc-300 transition-all hover:cursor-pointer w-full h-1/6 flex items-center justify-center text-2xl font-bold">
+							<div key={event.id} className="bg-zinc-200 p-4 border-white border-2 hover:h-1/5 hover:bg-zinc-300 transition-all w-full h-1/6 flex items-center justify-center text-2xl font-bold">
 								{event.start} - {event.end} : {event.title}
+								{authRef.current && <button className="font-light bg-red-300 rounded-md ml-4 p-2" onClick={()=>{
+									notifyEvent(event.id)
+								}}>Notify me</button>}
 							</div>
 						)
 					})
