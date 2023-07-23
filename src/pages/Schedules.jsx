@@ -4,6 +4,7 @@ import {useNavigate} from "react-router-dom";
 export const Schedules = () => {
 	const [user, setUser] = useState(null)
 	const [schedules, setSchedules] = useState(null)
+	const configRef = useRef([])
 	const selectorRef = useRef(false)
 	const numberScheduleRef = useRef(0)
 	const navigate = useNavigate()
@@ -42,6 +43,7 @@ export const Schedules = () => {
 			let resp = await response.json()
 			if(response.ok) {
 				setSchedules(resp.userSchedules)
+				configRef.current = resp.configs
 			} else {
 				console.log("error getting user schedules")
 			}
@@ -95,7 +97,21 @@ export const Schedules = () => {
 			alert(resp.message)
 		}
 	}
-
+	const toggleWeekend = async()=>{
+		const token = localStorage.getItem("token")
+		let response = await fetch("http://localhost:3000/schedules/weekends", {
+			method: "PUT",
+			headers: {
+				"Content-type": "application/json",
+				makePrivate: "true",
+				auth: token
+			}
+		})
+		let resp = await response.json()
+		if(!response.ok){
+			alert(resp.message)
+		}
+	}
 	return (
 		<div className="bg-black w-full h-full text-white">
 			<div className="bg-black text-black flex gap-4 w-full h-1/5">
@@ -140,11 +156,13 @@ export const Schedules = () => {
 							e.preventDefault();
 							createNewSchedules()
 						}} className=" ml-4 text-blue-500 bg-white h-4/5 w-[10%] rounded-md hover:drop-shadow-xl transition-all flex justify-center items-center">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-7 h-7"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/>
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-7 h-7"><path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/>
 							</svg>
 						</button>
 					</form>
-
+					<button onClick={toggleWeekend} className="bg-red-400 ml-4 h-5/6 w-1/6 border-4 border-white rounded-xl hover:drop-shadow-xl transition-all text-2xl  font-semibold">
+						Toggle weekend
+					</button>
 				</div>
 			</div>}
 		</div>

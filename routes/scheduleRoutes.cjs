@@ -10,11 +10,10 @@ const {authToken} = require("../middleware/auth.cjs");
 const querystring = require("querystring");
 const {stringTimeToInt, getAvailableTimes, formatDateToDDMMYYYY, getDay} = require("../utils/time.cjs");
 const {sendEmail} = require("../utils/mailer.cjs");
+const {DataTypes} = require("sequelize");
 const router = express.Router();
 connectDB.sync().then((data)=> console.log("DB is synced and ready scheduleRoutes")).catch(err => console.log(err))
 
-
-// TODO: email notification on event booking
 
 router.get("/all", authToken, async function(req, res) {
     try{
@@ -122,7 +121,39 @@ router.get("/available", async (req, res) => {
     }
 })
 
-// TODO: make an endpoint or modify an existing one that automatically makes weekends private or prevents addition
+router.put("/weekends", authToken, async(req, res)=>{
+    try {
+        const makePrivate = req.headers.makeprivate === "true"
+        let weekends = []
+        const user = await User.findOne({
+            where: {
+                id: req.user.id
+            }
+        })
+        const schedules = await user.getScheduleModels()
+        for(let schedule of schedules){
+            if(schedule.day.getDay() === 0 || schedule.day.getDay() === 6){
+                let config = await schedule.getConfig()
+                let configNew = await Config.create({
+                    isPrivate: makePrivate,
+                    preferredStart: config.preferredStart,
+                    preferredEnd: config.preferredEnd,
+                    breakStart: config.breakStart,
+                    breakDuration: config.breakDuration,
+                    minimumInterval: config.minimumInterval
+                })
+                await configNew.addScheduleModel(schedule)
+                weekends.push(schedule)
+            }
+        }
+        return res.status(200).json({message: "Successfully changed weekend configurations", weekends})
+    } catch (e) {
+        console.log(e)
+        return res.status(500).json({message: "There was an error privating weekends"})
+    }
+
+})
+
 router.post("/create", authToken, async (req, res) => {
     try {
         let existingSchedules = await Schedule.findAll({
@@ -140,14 +171,14 @@ router.post("/create", authToken, async (req, res) => {
                 dayStart: 8,
                 dayEnd: 18
             }
-            // TODO: Seems to be some issue here wherein the date depends on whatever the amount variable is and doesnt add successive dates but just adds the same date
         const configNew = await Config.create({
                 isPrivate: false,
                 minimumInterval: 0
         })
         for (let i = 0; i < amount; i++) {
-            date.setDate(date.getDate() + 1)
-            userScheduleInit.day = date
+            let newDate = new Date(date)
+            newDate.setDate(newDate.getDate() + i + 1)
+            userScheduleInit.day = newDate
             let newSchedule = await Schedule.create(userScheduleInit)
             createdSchedules.push(newSchedule)
         }

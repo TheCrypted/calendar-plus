@@ -50,15 +50,36 @@ const init = async()=>{
     // await configBasic.addScheduleModels(schedules);
     // const config = await schedules[0].getConfig();
     // console.log(config)
-    await Event.destroy({
-        where: {
-            [Op.or]: [
-                {title: "Auto test"},
-                {title: "Testing Presets"}
-            ]
 
-        }
-    })
+    // Create a config for wall that you may have accidentally deleted
+    // const schedules = await Schedule.findAll()
+    // const config = await Config.findByPk(1)
+    // for(let schedule of schedules){
+    //     if(schedule.configId > 4){
+    //         await config.addScheduleModel(schedule)
+    //     }
+    // }
+    //
+    // Destroy useless configs
+    // await Config.destroy({
+    //     where: {
+    //         id: {
+    //             [Op.gt]: 4
+    //         }
+    //     }
+    // })
+
+    // Destroy Test events
+    // await Event.destroy({
+    //     where: {
+    //         [Op.or]: [
+    //             {title: "Auto test"},
+    //             {title: "Testing Presets"}
+    //         ]
+    //
+    //     }
+    // })
+
     app.listen(PORT, ()=>{
         console.log(`App is running on Port: ${PORT}`);
     })
