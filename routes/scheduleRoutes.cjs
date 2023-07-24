@@ -10,7 +10,7 @@ const {authToken} = require("../middleware/auth.cjs");
 const querystring = require("querystring");
 const {stringTimeToInt, getAvailableTimes, formatDateToDDMMYYYY, getDay} = require("../utils/time.cjs");
 const {sendEmail} = require("../utils/mailer.cjs");
-const {DataTypes} = require("sequelize");
+const {DataTypes, Op} = require("sequelize");
 const router = express.Router();
 connectDB.sync().then((data)=> console.log("DB is synced and ready scheduleRoutes")).catch(err => console.log(err))
 
@@ -119,6 +119,38 @@ router.get("/available", async (req, res) => {
         console.log(e)
         return res.status(500).json({message: "There was an error getting available times"})
     }
+})
+
+router.get("/first/:n", authToken, async (req, res) => {
+    try {
+        const n = parseInt(req.params.n)
+        const schedules = await Schedule.findAll({
+            where: {
+                userModelId: req.user.id,
+                day: {
+                    [Op.gt]: new Date()
+                }
+            }
+        })
+        let events = []
+        let count = 0
+        for (let schedule of schedules){
+            const schEvents = await schedule.getEvents()
+            for(let event of schEvents){
+                let newEvent = JSON.parse(JSON.stringify(event));
+                newEvent.day = schedule.day
+                events.push(newEvent)
+                if(events.length === n ||count > 10 ){
+                    return res.status(200).json({message:"Successfully closest", events})
+                }
+            }
+            count++;
+        }
+    } catch (e){
+        console.log(e)
+        return res.status(500).json({message: "There was an error getting first n events"})
+    }
+
 })
 
 router.put("/weekends", authToken, async(req, res)=>{

@@ -1,5 +1,6 @@
 import {useEffect, useRef, useState} from "react";
 import {useNavigate} from "react-router-dom";
+import {Header} from "./utils/Header.jsx";
 
 export const Schedules = () => {
 	const [user, setUser] = useState(null)
@@ -113,14 +114,15 @@ export const Schedules = () => {
 		}
 	}
 	return (
-		<div className="bg-black w-full h-full text-white">
-			<div className="bg-black text-black flex gap-4 w-full h-1/5">
-				<button className="bg-white text-black w-1/4 h-1/5 font-bold" onClick={async (e)=>{
+		<div className="bg-black w-full h-full text-white grid grid-rows-[9%_10%_81%]">
+			<Header />
+			<div className="bg-black text-black flex gap-4 w-full">
+				<button className="bg-white text-black w-1/4 h-full font-bold" onClick={async (e)=>{
 					setSelected(new Array(schedules.length).fill(false))
 					selectorRef.current = !selectorRef.current
 					e.target.innerText = "Selecting " + selectorRef.current
 				}}>Selecting false</button>
-				<button className="bg-white text-black w-1/4 h-1/5 font-bold" onClick={()=>{
+				<button className="bg-white text-black w-1/4 h-full font-bold" onClick={()=>{
 					let firstTrueIndex = selected.indexOf(true)
 					let lastTrueIndex = selected.lastIndexOf(true)
 					navigate(`/Presets?s=${firstTrueIndex}&e=${lastTrueIndex}`)
@@ -129,7 +131,7 @@ export const Schedules = () => {
 				</button>
 			</div>
 			{schedules &&
-				<div className="w-full bg-zinc-300 scrollbar flex justify-center p-4 gap-4 overflow-y-auto h-4/5 flex-wrap">
+				<div className="w-full bg-zinc-300 scrollbar flex justify-center p-4 gap-4 overflow-y-auto flex-wrap">
 				{
 					schedules.map((schedule, index) => {
 						let bgColor = "bg-white"
