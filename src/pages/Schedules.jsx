@@ -2,12 +2,14 @@ import {useEffect, useRef, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import {Header} from "./components/Header.jsx";
 import {getSuffix} from "./utils/timeMath.js";
+import {DateComp} from "./components/DateComp.jsx";
 
 export const Schedules = () => {
 	const [user, setUser] = useState(null)
 	const [schedules, setSchedules] = useState(null)
 	const configRef = useRef([])
 	const selectorRef = useRef(false)
+	const [selecting, setSelecting] = useState(false)
 	const numberScheduleRef = useRef(0)
 	const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 	const monthArray = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
@@ -84,11 +86,12 @@ export const Schedules = () => {
 	const [selected, setSelected] = useState([])
 	const currentlySelecting = useRef(null)
 	const handleSelect = (index) => {
-		if(currentlySelecting.current){
+
+		if (currentlySelecting.current) {
 			let higher = Math.max(currentlySelecting.current, index)
 			let lower = Math.min(currentlySelecting.current, index)
 			let newSelected = (new Array(schedules.length).fill(false))
-			for(let i = lower; i < higher+1; i++){
+			for (let i = lower; i < higher + 1; i++) {
 				newSelected[i] = true
 			}
 			setSelected(newSelected)
@@ -98,6 +101,7 @@ export const Schedules = () => {
 			setSelected(newSelected)
 		}
 		currentlySelecting.current = currentlySelecting.current ? null : index
+
 	}
 
 	const createNewSchedules = async()=>{
@@ -143,6 +147,7 @@ export const Schedules = () => {
 				<button className="bg-white text-black w-1/4 h-full font-bold" onClick={async (e)=>{
 					setSelected(new Array(schedules.length).fill(false))
 					selectorRef.current = !selectorRef.current
+					setSelecting((prev)=>!prev)
 					e.target.innerText = "Selecting " + selectorRef.current
 				}}>Selecting false</button>
 				<button className="bg-white text-black w-1/4 h-full font-bold" onClick={()=>{
@@ -154,28 +159,41 @@ export const Schedules = () => {
 				</button>
 			</div>
 			{schedules &&
-				<div className="w-full scrollbar flex justify-center p-4 gap-4 overflow-y-auto flex-wrap">
+				<div className="w-full scrollbar flex justify-center p-4 gap-4 overflow-y-auto overflow-x-hidden flex-wrap">
 					{scheduledMonthsRef.current.length > 0 &&
 						scheduledMonthsRef.current.map((month)=>{
+							const bgColor = selecting ? "bg-blue-500 opacity-100": "bg-none"
 							return (
 								<div key={month} className="w-full flex flex-wrap justify-center mb-4 gap-4">
-									<div className="w-[88%] pl-4 flex items-center border-l-2 mb-3 border-white h-[8%] text-white text-3xl mt-6 font-bold">{monthArray[month]}, 2023</div>
-									<div className="w-[88%] p-3 h-auto rounded-2xl drop-shadow-xl bg-zinc-700 bg-opacity-50  grid grid-cols-7 gap-4">
+									<div className="w-[88%] pl-4 flex items-center justify-between border-l-2 mb-3 border-white h-16 text-white text-3xl mt-6 font-bold">
+										{monthArray[month]}, 2023
+										<div className="w-2/5 h-full flex items-center justify-between p-2 text-white text-xl">
+											<button className="flex w-auto p-2 h-full items-center pt-2" onClick={async (e)=>{
+												setSelected(new Array(schedules.length).fill(false))
+												selectorRef.current = !selectorRef.current
+												setSelecting((prev)=>!prev)
+											}}>
+												<svg xmlns="http://www.w3.org/2000/svg" fill={selecting ? "#0384fc" : "none"} viewBox="0 0 24 24" strokeWidth="1.5" stroke="white" className="mr-3 w-10 h-10">
+													<path strokeLinecap="round" strokeLinejoin="round" d="M5.25 7.5A2.25 2.25 0 017.5 5.25h9a2.25 2.25 0 012.25 2.25v9a2.25 2.25 0 01-2.25 2.25h-9a2.25 2.25 0 01-2.25-2.25v-9z"/>
+												</svg>
+												Select days
+											</button>
+											<button onClick={()=>{
+												let firstTrueIndex = selected.indexOf(true)
+												let lastTrueIndex = selected.lastIndexOf(true)
+												navigate(`/Presets?s=${firstTrueIndex}&e=${lastTrueIndex}`)
+											}} disabled={!selecting} className={"font-semibold mr-4 p-2 rounded-xl hover:opacity-100 "+ bgColor+" transition-all opacity-50 border-2 border-white"}>
+												Modify schedules
+											</button>
+										</div>
+									</div>
+									<div className="w-[88%] p-3 z-0 h-auto rounded-2xl drop-shadow-xl bg-zinc-700 bg-opacity-50  grid grid-cols-7 gap-4">
 										{
-											schedules.map((schedule)=>{
+											schedules.map((schedule, index)=>{
+												const bgColor = selected[index] ? "bg-purple-900 bg-opacity-70" : "bg-zinc-900 bg-opacity-50"
 												const day = new Date(schedule.day)
 												if(day.getMonth() === month) {
-													return (
-														<div key={schedule.id} className="w-full h-32 bg-zinc-900 bg-opacity-50 drop-shadow-xl rounded-xl  text-white flex flex-wrap items-center justify-center text-3xl font-extrabold">
-															<div
-																className="w-full h-4/6 flex flex-wrap items-center justify-center">{day.getDate()}<sup>{getSuffix(day.getDate())}</sup>
-															</div>
-															<div
-																className="w-full h-2/6 rounded-b-xl bg-zinc-900 bg-opacity-50 text-xl flex items-center justify-center font-normal">
-																{weekdays[day.getDay()]}
-															</div>
-														</div>
-													)
+													return <DateComp selected={bgColor} selectorRef={selecting} handleSelect={handleSelect} index={index} key={schedule.id} user={user} schedule={schedule}/>
 												}
 											})
 										}
@@ -184,7 +202,9 @@ export const Schedules = () => {
 							)
 						})
 					}
-				{
+
+					{
+						// old barely functional stuff
 					schedules.map((schedule, index) => {
 						let bgColor = "bg-white"
 						if(selected[index]) {

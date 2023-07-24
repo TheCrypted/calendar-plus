@@ -57,7 +57,7 @@ export const Header = () => {
 
 	return (
 		<div className="bg-slate-950 flex">
-			<div className="w-1/4 text-3xl font-bold font-mono flex items-center pl-2">
+			<div className="w-1/4 text-3xl font-bold font-mono flex items-center pl-2 tracking-wide">
 				{user?.slice(0,10)}'s Calendar+
 			</div>
 			{topEvents.length > 0 &&
