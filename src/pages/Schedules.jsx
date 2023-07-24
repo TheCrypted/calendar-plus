@@ -1,6 +1,7 @@
 import {useEffect, useRef, useState} from "react";
 import {useNavigate} from "react-router-dom";
-import {Header} from "./utils/Header.jsx";
+import {Header} from "./components/Header.jsx";
+import {getSuffix} from "./utils/timeMath.js";
 
 export const Schedules = () => {
 	const [user, setUser] = useState(null)
@@ -8,7 +9,13 @@ export const Schedules = () => {
 	const configRef = useRef([])
 	const selectorRef = useRef(false)
 	const numberScheduleRef = useRef(0)
+	const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+	const monthArray = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+	const daysInEachMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 	const navigate = useNavigate()
+	const [firstDate, setFirstDate] = useState(new Date())
+	const scheduledMonthsRef = useRef([])
+	let scheduleIndexRef = useRef(0)
 
 	useEffect(() => {
 		async function getUser() {
@@ -56,6 +63,22 @@ export const Schedules = () => {
 	useEffect(()=>{
 		if(schedules) {
 			setSelected(new Array(schedules.length).fill(false))
+			let day = new Date(schedules[0].day)
+			setFirstDate(new Date(day.getFullYear(), day.getMonth(), 1))
+			let currentMonth = -1;
+			if(scheduledMonthsRef.current.length === 0){
+				for (let i = 0; i < schedules.length; i++) {
+					let date = new Date(schedules[i].day)
+					if (date.getMonth() !== currentMonth) {
+						scheduledMonthsRef.current.push(date.getMonth())
+						currentMonth = date.getMonth()
+					}
+					if (date.getDate() === 1) {
+						i += 20;
+					}
+				}
+			}
+
 		}
 	}, [schedules])
 	const [selected, setSelected] = useState([])
@@ -114,7 +137,7 @@ export const Schedules = () => {
 		}
 	}
 	return (
-		<div className="bg-black w-full h-full text-white grid grid-rows-[9%_10%_81%]">
+		<div style={{backgroundImage: `url("https://res.allmacwallpaper.com/get/Retina-MacBook-Air-13-inch-wallpapers/lava-abstract-formation-8k-2560x1600/23136-11.jpg")`}} className="bg-cover bg-black w-full h-full text-white bg-cover grid grid-rows-[9%_5%_86%]">
 			<Header />
 			<div className="bg-black text-black flex gap-4 w-full">
 				<button className="bg-white text-black w-1/4 h-full font-bold" onClick={async (e)=>{
@@ -131,7 +154,36 @@ export const Schedules = () => {
 				</button>
 			</div>
 			{schedules &&
-				<div className="w-full bg-zinc-300 scrollbar flex justify-center p-4 gap-4 overflow-y-auto flex-wrap">
+				<div className="w-full scrollbar flex justify-center p-4 gap-4 overflow-y-auto flex-wrap">
+					{scheduledMonthsRef.current.length > 0 &&
+						scheduledMonthsRef.current.map((month)=>{
+							return (
+								<div key={month} className="w-full flex flex-wrap justify-center mb-4 gap-4">
+									<div className="w-[88%] pl-4 flex items-center border-l-2 mb-3 border-white h-[8%] text-white text-3xl mt-6 font-bold">{monthArray[month]}, 2023</div>
+									<div className="w-[88%] p-3 h-auto rounded-2xl drop-shadow-xl bg-zinc-700 bg-opacity-50  grid grid-cols-7 gap-4">
+										{
+											schedules.map((schedule)=>{
+												const day = new Date(schedule.day)
+												if(day.getMonth() === month) {
+													return (
+														<div key={schedule.id} className="w-full h-32 bg-zinc-900 bg-opacity-50 drop-shadow-xl rounded-xl  text-white flex flex-wrap items-center justify-center text-3xl font-extrabold">
+															<div
+																className="w-full h-4/6 flex flex-wrap items-center justify-center">{day.getDate()}<sup>{getSuffix(day.getDate())}</sup>
+															</div>
+															<div
+																className="w-full h-2/6 rounded-b-xl bg-zinc-900 bg-opacity-50 text-xl flex items-center justify-center font-normal">
+																{weekdays[day.getDay()]}
+															</div>
+														</div>
+													)
+												}
+											})
+										}
+									</div>
+								</div>
+							)
+						})
+					}
 				{
 					schedules.map((schedule, index) => {
 						let bgColor = "bg-white"

@@ -1,5 +1,5 @@
 import {useEffect, useRef, useState} from "react";
-import {PresetForm} from "./utils/PresetForm.jsx";
+import {PresetForm} from "./components/PresetForm.jsx";
 
 export const UserDay = () => {
 	const [events, setEvents] = useState([])

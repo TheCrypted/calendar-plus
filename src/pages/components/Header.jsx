@@ -1,6 +1,7 @@
 import {useEffect, useRef, useState} from "react";
 import {useNavigate} from "react-router-dom";
-import {getSuffix, to12h} from "./timeMath.js";
+import {getSuffix, to12h} from "../utils/timeMath.js";
+import {Dropdown} from "./Dropdown.jsx";
 
 export const Header = () => {
 	const [user, setUser] = useState(null);
@@ -42,11 +43,16 @@ export const Header = () => {
 				alert(resp.message)
 			}
 		}
+		// setInterval(handleClickScroll, 3000)
 		getUser()
 		getTopEvents()
 	}, [])
-	const handleScroll = ()=>{
-		scrollRef.current.scrollTop += 100
+	const handleClickScroll = ()=>{
+		const height = scrollRef.current.offsetHeight
+		scrollRef.current.scrollTop += height
+		if(scrollRef.current.scrollTop >= height* 2 -10) {
+			scrollRef.current.scrollTop = 0
+		}
 	}
 
 	return (
@@ -55,7 +61,7 @@ export const Header = () => {
 				{user?.slice(0,10)}'s Calendar+
 			</div>
 			{topEvents.length > 0 &&
-				<div ref={scrollRef} className="w-3/5 bg-slate-800 transition-all flex flex-wrap no-scrollbar overflow-auto " onMouseEnter={handleScroll}>
+				<div ref={scrollRef} className="w-3/5 bg-slate-800 transition-all flex flex-wrap no-scrollbar overflow-auto hover:cursor-pointer scroll-smooth " /*onClick={handleClickScroll}*/>
 
 					{ topEvents.map((event)=>{
 						let date = new Date(event.day)
@@ -75,7 +81,9 @@ export const Header = () => {
 					}) }
 				</div>
 			}
-			<div></div>
+			<div className="w-[15%] h-full">
+				<Dropdown />
+			</div>
 		</div>
 	)
 }
