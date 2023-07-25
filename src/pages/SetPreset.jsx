@@ -91,7 +91,7 @@ export const SetPreset = () => {
 	const updateConfig = async ()=>{
 		const breakDuration = breakRef.current.value.split("-")[1]
 		const config = {
-			isPrivate: Boolean(privateRef.current.value),
+			isPrivate: privateRef.current.value === "true",
 			preferredStart: preferenceRef.current.value.split("-")[0],
 			preferredEnd: preferenceRef.current.value.split("-")[1],
 			breakStart: breakRef.current.value.split("-")[0],

@@ -3,6 +3,7 @@ import {useNavigate} from "react-router-dom";
 import {Header} from "./components/Header.jsx";
 import {getSuffix} from "./utils/timeMath.js";
 import {DateComp} from "./components/DateComp.jsx";
+import {WeekendToggle} from "./components/WeekendToggle.jsx";
 
 export const Schedules = () => {
 	const [user, setUser] = useState(null)
@@ -11,6 +12,8 @@ export const Schedules = () => {
 	const selectorRef = useRef(false)
 	const [selecting, setSelecting] = useState(false)
 	const numberScheduleRef = useRef(0)
+	const newRef = useRef(null)
+	const [newOpen, setNewOpen] = useState(false)
 	const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 	const monthArray = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 	const daysInEachMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
@@ -119,10 +122,10 @@ export const Schedules = () => {
 		})
 		let resp = await response.json()
 		if(response.ok){
-			console.log(resp)
 			setSchedules((existingSchedules) => [...existingSchedules, ...resp.createdSchedules])
+			configRef.current = [...configRef.current, ...resp.configs]
 		} else {
-			alert(resp.message)
+			console.log(resp.message)
 		}
 	}
 	const toggleWeekend = async()=>{
@@ -137,27 +140,27 @@ export const Schedules = () => {
 		})
 		let resp = await response.json()
 		if(!response.ok){
-			alert(resp.message)
+			console.log(resp.message)
 		}
+		location.reload()
 	}
+	const onNewClick = ()=>{
+		newRef.current.classList.toggle("w-20")
+		newRef.current.classList.toggle("w-2/3")
+		newRef.current.classList.toggle("h-20")
+		newRef.current.classList.toggle("h-1/6")
+		newRef.current.classList.toggle("rounded-full")
+		newRef.current.classList.toggle("rounded-xl")
+		newRef.current.classList.toggle("bg-blue-500")
+		newRef.current.classList.toggle("bg-zinc-700")
+		newRef.current.classList.toggle("bg-opacity-70")
+		setNewOpen((prev)=> !prev)
+
+	}
+
 	return (
-		<div style={{backgroundImage: `url("https://res.allmacwallpaper.com/get/Retina-MacBook-Air-13-inch-wallpapers/lava-abstract-formation-8k-2560x1600/23136-11.jpg")`}} className="bg-cover bg-black w-full h-full text-white bg-cover grid grid-rows-[9%_5%_86%]">
+		<div style={{backgroundImage: `url("https://res.allmacwallpaper.com/get/Retina-MacBook-Air-13-inch-wallpapers/lava-abstract-formation-8k-2560x1600/23136-11.jpg")`}} className="bg-cover bg-black w-full h-full text-white bg-cover grid grid-rows-[9%_91%]">
 			<Header />
-			<div className="bg-black text-black flex gap-4 w-full">
-				<button className="bg-white text-black w-1/4 h-full font-bold" onClick={async (e)=>{
-					setSelected(new Array(schedules.length).fill(false))
-					selectorRef.current = !selectorRef.current
-					setSelecting((prev)=>!prev)
-					e.target.innerText = "Selecting " + selectorRef.current
-				}}>Selecting false</button>
-				<button className="bg-white text-black w-1/4 h-full font-bold" onClick={()=>{
-					let firstTrueIndex = selected.indexOf(true)
-					let lastTrueIndex = selected.lastIndexOf(true)
-					navigate(`/Presets?s=${firstTrueIndex}&e=${lastTrueIndex}`)
-				}}>
-					Set Preset for Selection
-				</button>
-			</div>
 			{schedules &&
 				<div className="w-full scrollbar flex justify-center p-4 gap-4 overflow-y-auto overflow-x-hidden flex-wrap">
 					{scheduledMonthsRef.current.length > 0 &&
@@ -190,7 +193,8 @@ export const Schedules = () => {
 									<div className="w-[88%] p-3 z-0 h-auto rounded-2xl drop-shadow-xl bg-zinc-700 bg-opacity-50  grid grid-cols-7 gap-4">
 										{
 											schedules.map((schedule, index)=>{
-												const bgColor = selected[index] ? "bg-purple-900 bg-opacity-70" : "bg-zinc-900 bg-opacity-50"
+												const opacity = configRef.current[index].isPrivate ? " opacity-50 " : " opacity-100 "
+												const bgColor = selected[index] ? "bg-purple-900 bg-opacity-70": "bg-zinc-900 bg-opacity-50" + opacity
 												const day = new Date(schedule.day)
 												if(day.getMonth() === month) {
 													return <DateComp selected={bgColor} selectorRef={selecting} handleSelect={handleSelect} index={index} key={schedule.id} user={user} schedule={schedule}/>
@@ -202,41 +206,40 @@ export const Schedules = () => {
 							)
 						})
 					}
-
+				<div onClick={onNewClick} ref={newRef} className="transition-all w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center drop-shadow-md hover:drop-shadow-xl hover:cursor-pointer mt-8">
+					{!newOpen && <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-11 h-11">
+						<path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+					</svg>}
 					{
-						// old barely functional stuff
-					schedules.map((schedule, index) => {
-						let bgColor = "bg-white"
-						if(selected[index]) {
-							bgColor = "bg-blue-300";
-						}
-						return (
-							<div key={schedule.id} onClick={()=>{
-								if(!selectorRef.current) {
-									navigate(`/Day/${user.name}?schedule=${schedule.id}&owner=${user.id}`)
-								} else {
-									handleSelect(index)
-								}
-							}} className={"hover:cursor-pointer " + bgColor + " transition-all hover:drop-shadow-xl text-black justify-center text-2xl font-bold bg-white rounded-md flex items-center  w-1/6 h-1/6"}>{schedule.day.split("T")[0]}</div>
-						)
-					})
-				}
-				<div className="w-full h-1/6 flex items-center justify-center mt-4 mb-4">
-					<form className=" flex items-center justify-center bg-blue-500 rounded-xl h-5/6 p-4 w-1/3 drop-shadow-md hover:drop-shadow-xl transition-all border-4 text-2xl  font-semibold border-white">
-						Create
-						<input className="text-white hide-spin-buttons focus:outline-none p-2 ml-3 mr-3 w-1/5  rounded-md bg-blue-700 text-white" placeholder="0" type="number" ref={numberScheduleRef} />
-						Schedules
-						<button type="submit" onClick={(e)=> {
-							e.preventDefault();
-							createNewSchedules()
-						}} className=" ml-4 text-blue-500 bg-white h-4/5 w-[10%] rounded-md hover:drop-shadow-xl transition-all flex justify-center items-center">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-7 h-7"><path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/>
+						newOpen &&
+						<>
+							<div className="w-[10%] bg-zinc-400 bg-opacity-50 h-full flex items-center rounded-l-xl justify-center">
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+								<path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12h-15" />
 							</svg>
-						</button>
-					</form>
-					<button onClick={toggleWeekend} className="bg-red-400 ml-4 h-5/6 w-1/6 border-4 border-white rounded-xl hover:drop-shadow-xl transition-all text-2xl  font-semibold">
-						Toggle weekend
-					</button>
+							</div>
+						<div className=" w-1/2 h-full" onClick={(e)=>e.stopPropagation()}>
+							<form className=" flex items-center justify-center bg-zinc-700 bg-opacity-50  h-full p-4 w-full drop-shadow-md hover:drop-shadow-xl transition-all text-2xl  font-semibold border-white">
+								Add
+								<input className="text-white hide-spin-buttons focus:outline-none p-2 ml-3 mr-3 w-1/5  rounded-md bg-zinc-900 bg-opacity-50 text-white" placeholder="0" type="number" ref={numberScheduleRef} />
+								Days
+								<button type="submit" onClick={(e)=> {
+									e.preventDefault();
+									createNewSchedules()
+								}} className=" ml-6 hover:bg-opacity-40 text-white w-[12%] bg-white bg-opacity-20 h-[50%]  rounded-md hover:drop-shadow-xl transition-all flex justify-center items-center">
+									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-7 h-7"><path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/>
+									</svg>
+								</button>
+							</form>
+						</div>
+						<div className="rounded-r-xl w-[40%] h-full" onClick={(e)=>e.stopPropagation()}>
+							<WeekendToggle />
+							{/*<button onClick={toggleWeekend} className="bg-zinc-400 bg-opacity-40  h-full w-full border-white rounded-r-xl hover:drop-shadow-xl transition-all text-2xl  font-semibold">*/}
+							{/*	Toggle weekend*/}
+							{/*</button>*/}
+						</div>
+						</>
+					}
 				</div>
 			</div>}
 		</div>

@@ -124,11 +124,14 @@ router.get("/available", async (req, res) => {
 router.get("/first/:n", authToken, async (req, res) => {
     try {
         const n = parseInt(req.params.n)
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
         const schedules = await Schedule.findAll({
             where: {
                 userModelId: req.user.id,
                 day: {
-                    [Op.gt]: new Date()
+                    [Op.gt]: yesterday
                 }
             }
         })
@@ -146,6 +149,7 @@ router.get("/first/:n", authToken, async (req, res) => {
             }
             count++;
         }
+        return res.status(200).json({message:"Successfully closest", events})
     } catch (e){
         console.log(e)
         return res.status(500).json({message: "There was an error getting first n events"})
@@ -216,7 +220,7 @@ router.post("/create", authToken, async (req, res) => {
         }
         await configNew.addScheduleModels(createdSchedules)
 
-        return res.status(200).json({message: "Successfully created schedules", createdSchedules})
+        return res.status(200).json({message: "Successfully created schedules", createdSchedules, configs: Array(createdSchedules.length).fill(configNew)})
     } catch (e){
         console.log(e)
         return res.status(500).json({message: "There was an error creating schedules for the next month"})
