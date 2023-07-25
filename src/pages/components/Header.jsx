@@ -40,7 +40,7 @@ export const Header = () => {
 			if(response.ok) {
 				setTopEvents(resp.events)
 			} else {
-				alert(resp.message)
+				console.log(resp.message)
 			}
 		}
 		// setInterval(handleClickScroll, 3000)
@@ -50,14 +50,14 @@ export const Header = () => {
 	const handleClickScroll = ()=>{
 		const height = scrollRef.current.offsetHeight
 		scrollRef.current.scrollTop += height
-		if(scrollRef.current.scrollTop >= height* 2 -10) {
+		if(scrollRef.current.scrollTop >= height* (topEvents.length-1) -10) {
 			scrollRef.current.scrollTop = 0
 		}
 	}
 
 	return (
-		<div className="bg-slate-950 flex">
-			<div className="w-1/4 text-3xl font-bold font-mono flex items-center pl-2 tracking-wide">
+		<div className="bg-slate-950 flex text-white">
+			<div className="w-1/4 text-3xl font-bold font-mono flex items-center justify-between pl-2 tracking-wide">
 				{user?.slice(0,10)}'s Calendar+
 			</div>
 			{topEvents.length > 0 &&

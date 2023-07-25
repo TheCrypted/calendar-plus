@@ -159,7 +159,7 @@ export const Schedules = () => {
 	}
 
 	return (
-		<div style={{backgroundImage: `url("https://res.allmacwallpaper.com/get/Retina-MacBook-Air-13-inch-wallpapers/lava-abstract-formation-8k-2560x1600/23136-11.jpg")`}} className="bg-cover bg-black w-full h-full text-white bg-cover grid grid-rows-[9%_91%]">
+		<div style={{backgroundImage: `url("https://res.allmacwallpaper.com/get/Retina-MacBook-Air-13-inch-wallpapers/lava-abstract-formation-8k-2560x1600/23136-11.jpg")`}} className="bg-cover bg-black w-full h-full text-white grid grid-rows-[9%_91%]">
 			<Header />
 			{schedules &&
 				<div className="w-full scrollbar flex justify-center p-4 gap-4 overflow-y-auto overflow-x-hidden flex-wrap">

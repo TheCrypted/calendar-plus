@@ -1,20 +1,27 @@
 import {useEffect, useRef, useState} from "react";
 import {PresetForm} from "./components/PresetForm.jsx";
+import {Header} from "./components/Header.jsx";
+import {Link, useNavigate} from "react-router-dom";
 
 export const UserDay = () => {
 	const [events, setEvents] = useState([])
 	const [scheduleOwner, setScheduleOwner] = useState(null)
 	const [presets, setPresets] = useState([])
 	const [selectedPreset, setSelectedPreset] = useState(null)
+	const [topNews, setTopNews] = useState([])
 	const emailRef = useRef(null);
 	const titleRef = useRef(null);
+	const scrollRef = useRef(null);
 	const descriptionRef = useRef(null);
 	const startRef = useRef(null);
 	const endRef = useRef(null);
 	const searchParams = new URLSearchParams(location.search);
 	const scheduleID = searchParams.get("schedule");
 	const authRef = useRef(false);
+	const dayRef = useRef(null);
 	const privateRef = useRef(false);
+	const currentTextRef = useRef("Wednesday");
+	const navigate = useNavigate()
 	useEffect(() => {
 		const token = localStorage.getItem("token");
 		setScheduleOwner(searchParams.get("owner"));
@@ -46,6 +53,15 @@ export const UserDay = () => {
 				console.log(resp)
 			}
 		}
+		const getNewsTop = async () => {
+			let response = await fetch(`https://newsapi.org/v2/top-headlines?sources=bbc-news&apiKey=10ed9346cf104d98b85824d992c8512d`)
+			let resp = await response.json();
+			if(!response.ok){
+				console.log(resp)
+			} else {
+				setTopNews(resp.articles)
+			}
+		}
 		const getEvents = async ()=> {
 			const token = localStorage.getItem("token")
 			let response = await fetch(`http://localhost:3000/events/${scheduleID}`, {
@@ -65,9 +81,12 @@ export const UserDay = () => {
 				console.log(resp)
 			}
 		}
+		// setInterval(handleClickScroll, 3000)
 		getEvents()
 		getPresets()
 		verifyAdminAccess()
+		getNewsTop()
+
 	}, [])
 	const submitForm = async () => {
 		const searchParams = new URLSearchParams(location.search);
@@ -115,6 +134,20 @@ export const UserDay = () => {
 			location.reload()
 		}
 	}
+	const glitchDay = ()=>{
+		if(dayRef.current){
+			let validChars = []
+			for (let i=0; i < currentTextRef.current.length; i++) {
+				validChars.push(currentTextRef.current.charCodeAt(i))
+			}
+			let newStr = ''
+			for (let i = 0; i < currentTextRef.current.length; i++) {
+				newStr = newStr + String.fromCharCode(validChars[Math.floor(Math.random() * validChars.length)])
+			}
+			dayRef.current.innerText = newStr
+		}
+	}
+	glitchDay()
 	const getAvailableTimes = async () => {
 		let response = await fetch(`http://localhost:3000/schedules/available?schedule=${scheduleID}`, {
 			method: "GET",
@@ -161,6 +194,13 @@ export const UserDay = () => {
 			alert(resp.message)
 		}
 	}
+	const handleClickScroll = ()=>{
+		const height = scrollRef.current.offsetHeight
+		scrollRef.current.scrollTop += height
+		if(scrollRef.current.scrollTop >= height * 9 -10) {
+			scrollRef.current.scrollTop = 0
+		}
+	}
 
 	return (
 		<>
@@ -172,7 +212,40 @@ export const UserDay = () => {
 				</div>
 			</div>
 		}
-		<div className="w-full h-full bg-zinc-800 grid grid-cols-[60%_40%]">
+		<div style={{backgroundImage: `url("https://res.allmacwallpaper.com/get/Retina-MacBook-Air-13-inch-wallpapers/lava-abstract-formation-8k-2560x1600/23136-11.jpg")`}} className="bg-cover grid grid-rows-[9%_91%] w-full h-full ">
+			{authRef.current  && <Header/>}
+			{!authRef.current &&
+				<div className="bg-slate-950 flex text-white justify-between">
+					<div className="w-1/6 text-3xl font-bold font-mono flex items-center pl-4 tracking-wide">
+						Calendar+
+					</div>
+					{topNews.length > 0 &&
+						<div ref={scrollRef} className="w-3/5 bg-slate-800 transition-all flex flex-wrap no-scrollbar overflow-auto hover:cursor-pointer scroll-smooth " /*onClick={handleClickScroll}*/>
+
+							{ topNews.map((news, index)=>{
+								const title = news.title.slice(0, 60) === news.title ? news.title : news.title.slice(0, 60) + "..."
+								return (
+									<div key={news.title} className="h-full w-full flex" onClick={()=>window.location.href = (news.url)}>
+										<div className="w-[12%] h-full  flex items-center justify-center text-3xl font-semibold bg-slate-900">
+											{news.author.split(' ')[0]}
+										</div>
+										<div className=" w-3/4 h-full  text-2xl font-semibold pl-4 pr-4 p-2 flex items-center">
+											{title}
+										</div>
+										<div className="w-[13%] h-full  flex items-center justify-center text-2xl font-semibold bg-slate-900">
+
+										</div>
+									</div>
+								)
+							}) }
+						</div>
+					}
+					<div className="w-[15%] h-full flex items-center justify-center text-2xl font-bold">
+						<Link to="/Signin">Login</Link>
+					</div>
+				</div>
+			}
+		<div className="w-full h-full  grid grid-cols-[60%_40%]">
 			<div className="bg-white m-12 rounded-xl overflow-y-auto scrollbar drop-shadow-xl hover:drop-shadow-2xl transition-all ">
 				{
 					events.map((event)=>{
@@ -188,6 +261,14 @@ export const UserDay = () => {
 				}
 			</div>
 			<div className="m-12 overflow-y-auto scrollbar">
+				<div className=" h-1/4 w-full mb-8 grid grid-rows-[62%_38%]">
+					<div ref={dayRef} className=" text-white text-7xl font-bold font-mono pl-4 w-2/3 pb-4 flex items-end">
+						Wednesday
+					</div>
+					<div className=" text-4xl font-semibold font-mono pl-4 text-white">
+						14<sup>th</sup> July 2023
+					</div>
+				</div>
 				{
 					presets.map((preset)=>{
 						return(
@@ -228,6 +309,7 @@ export const UserDay = () => {
 					clearSchedule();
 				}}>Clear Schedule</button>}
 			</div>
+		</div>
 		</div>
 	</>
 	)
