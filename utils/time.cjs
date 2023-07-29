@@ -35,7 +35,7 @@ async function getAvailableTimes(scheduleID) {
             const available = [last, stringTimeToInt(event.start)]
             last = stringTimeToInt(event.end)
             if (available[1] - available[0] >= 1) {
-
+                // TODO: Maybe don't show the plot as available unless its greater than 1 hour?
             }
             availableSlots.push(available)
         }

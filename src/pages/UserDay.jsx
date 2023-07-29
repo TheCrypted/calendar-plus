@@ -2,13 +2,19 @@ import {useEffect, useRef, useState} from "react";
 import {PresetForm} from "./components/PresetForm.jsx";
 import {Header} from "./components/Header.jsx";
 import {Link, useNavigate} from "react-router-dom";
+import {getDayPercent, getSuffix, intTimeToString} from "./utils/timeMath.js";
+import {EventDisplay} from "./components/EventDisplay.jsx";
 
 export const UserDay = () => {
 	const [events, setEvents] = useState([])
 	const [scheduleOwner, setScheduleOwner] = useState(null)
+	const [schedule, setSchedule] = useState(null)
 	const [presets, setPresets] = useState([])
 	const [selectedPreset, setSelectedPreset] = useState(null)
+	const [availableTimes, setAvailableTimes] = useState([])
 	const [topNews, setTopNews] = useState([])
+	const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+	const monthArray = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 	const emailRef = useRef(null);
 	const titleRef = useRef(null);
 	const scrollRef = useRef(null);
@@ -20,8 +26,22 @@ export const UserDay = () => {
 	const authRef = useRef(false);
 	const dayRef = useRef(null);
 	const privateRef = useRef(false);
-	const currentTextRef = useRef("Wednesday");
+	const currentTextRef = useRef("Thursday");
 	const navigate = useNavigate()
+	const getAvailableTimes = async () => {
+		let response = await fetch(`http://localhost:3000/schedules/available?schedule=${scheduleID}`, {
+			method: "GET",
+			headers: {
+				"Content-type": "application/json"
+			}
+		})
+		let resp = await response.json();
+		if(!response.ok){
+			console.log(resp.message);
+		} else {
+			setAvailableTimes(resp.availableSlots)
+		}
+	}
 	useEffect(() => {
 		const token = localStorage.getItem("token");
 		setScheduleOwner(searchParams.get("owner"));
@@ -74,6 +94,11 @@ export const UserDay = () => {
 			const resp = await response.json()
 			if(response.ok){
 				setEvents(resp.events)
+				setSchedule(new Date(resp.schedule.day))
+				//Changing the required day value according to which schedule we are in
+				let date = new Date(resp.schedule.day)
+				dayRef.current.innerText = weekdays[date.getDay()]
+				currentTextRef.current = weekdays[date.getDay()]
 			} else {
 				if(resp.isPrivate){
 					privateRef.current = true
@@ -86,7 +111,7 @@ export const UserDay = () => {
 		getPresets()
 		verifyAdminAccess()
 		getNewsTop()
-
+		getAvailableTimes()
 	}, [])
 	const submitForm = async () => {
 		const searchParams = new URLSearchParams(location.search);
@@ -135,33 +160,24 @@ export const UserDay = () => {
 		}
 	}
 	const glitchDay = ()=>{
-		if(dayRef.current){
-			let validChars = []
-			for (let i=0; i < currentTextRef.current.length; i++) {
-				validChars.push(currentTextRef.current.charCodeAt(i))
+		const dayArr = currentTextRef.current.split("")
+		let i = 0;
+		const textChange = setInterval(()=>{
+			for(let char = 0; char < dayArr.length; char++){
+				if(char < i){
+					dayArr[char] = currentTextRef.current.charAt(char)
+				} else {
+					dayArr[char] = String.fromCharCode(Math.floor(Math.random() * (130-65) + 65))
+				}
+				dayRef.current.innerText = dayArr.join("")
 			}
-			let newStr = ''
-			for (let i = 0; i < currentTextRef.current.length; i++) {
-				newStr = newStr + String.fromCharCode(validChars[Math.floor(Math.random() * validChars.length)])
+			if ( i >  dayArr.length){
+				clearInterval(textChange)
 			}
-			dayRef.current.innerText = newStr
-		}
+			i++
+		}, 40)
 	}
-	glitchDay()
-	const getAvailableTimes = async () => {
-		let response = await fetch(`http://localhost:3000/schedules/available?schedule=${scheduleID}`, {
-			method: "GET",
-			headers: {
-				"Content-type": "application/json"
-			}
-		})
-		let resp = await response.json();
-		if(!response.ok){
-			alert(resp.message);
-		} else {
-			console.log(resp.availableSlots)
-		}
-	}
+
 	const clearSchedule = async () => {
 		const token = localStorage.getItem("token");
 		let response = await fetch(`http://localhost:3000/schedules/${scheduleID}`, {
@@ -221,7 +237,6 @@ export const UserDay = () => {
 					</div>
 					{topNews.length > 0 &&
 						<div ref={scrollRef} className="w-3/5 bg-slate-800 transition-all flex flex-wrap no-scrollbar overflow-auto hover:cursor-pointer scroll-smooth " /*onClick={handleClickScroll}*/>
-
 							{ topNews.map((news, index)=>{
 								const title = news.title.slice(0, 60) === news.title ? news.title : news.title.slice(0, 60) + "..."
 								return (
@@ -246,30 +261,69 @@ export const UserDay = () => {
 				</div>
 			}
 		<div className="w-full h-full  grid grid-cols-[60%_40%]">
-			<div className="bg-white m-12 rounded-xl overflow-y-auto scrollbar drop-shadow-xl hover:drop-shadow-2xl transition-all ">
+			<div className="bg-zinc-900 bg-opacity-70 m-12 rounded-xl overflow-y-auto scrollbar drop-shadow-xl hover:drop-shadow-2xl transition-all ">
 				{
-					events.map((event)=>{
-						return (
-							<div key={event.id} className="bg-zinc-200 p-4 border-white border-2 hover:h-1/5 hover:bg-zinc-300 transition-all w-full h-1/6 flex items-center justify-center text-2xl font-bold">
-								{event.start} - {event.end} : {event.title}
-								{authRef.current && <button className="font-light bg-red-300 rounded-md ml-4 p-2" onClick={()=>{
-									notifyEvent(event.id)
-								}}>Notify me</button>}
-							</div>
-						)
+					availableTimes.length > 0 &&
+					availableTimes.map((timeBlock, index)=>{
+						if(availableTimes.length > 1 && events && events[index]){
+							return (
+								<>
+								<div key={timeBlock[0]} style={{height: getDayPercent(timeBlock) + "%"}} className="w-full flex">
+									<div className=" w-1/6 flex-col justify-end flex">
+										{/*<div className="w-full h-auto pr-3 border-b-2 flex items-center justify-end text-white text-xl opacity-70">{intTimeToString(timeBlock[0])}</div>*/}
+										<div className="w-full h-auto pr-3 border-b-2 flex items-center justify-end text-white text-xl opacity-70">
+											{intTimeToString(timeBlock[1])}
+										</div>
+									</div>
+									<div>
+									</div>
+								</div>
+								<EventDisplay key={events[index].id} event={events[index]}/>
+								</>
+							)
+						} else {
+							return (
+								<div key={timeBlock[0]} style={{height: getDayPercent(timeBlock) + "%"}} className="w-full h-1/3 mb-2 flex">
+									<div className=" w-1/6 flex-col justify-between flex">
+										<div className="w-full h-auto pr-3 border-b-2 flex items-center justify-end text-white text-xl opacity-70">{intTimeToString(timeBlock[0])}</div>
+										<div className="w-full h-auto pr-3 border-b-2 flex items-center justify-end text-white text-xl opacity-70">{intTimeToString(timeBlock[1])}</div>
+									</div>
+									<div>
+
+									</div>
+								</div>
+							)
+						}
 					})
 				}
 			</div>
-			<div className="m-12 overflow-y-auto scrollbar">
+			{/*<div className="bg-white m-12 rounded-xl overflow-y-auto scrollbar drop-shadow-xl hover:drop-shadow-2xl transition-all ">*/}
+			{/*	{*/}
+			{/*		events.map((event)=>{*/}
+			{/*			return (*/}
+			{/*				<div key={event.id} className="bg-zinc-200 p-4 border-white border-2 hover:h-1/5 hover:bg-zinc-300 transition-all w-full h-1/6 flex items-center justify-center text-2xl font-bold">*/}
+			{/*					{event.start} - {event.end} : {event.title}*/}
+			{/*					{authRef.current && <button className="font-light bg-red-300 rounded-md ml-4 p-2" onClick={()=>{*/}
+			{/*						notifyEvent(event.id)*/}
+			{/*					}}>Notify me</button>}*/}
+			{/*				</div>*/}
+			{/*			)*/}
+			{/*		})*/}
+			{/*	}*/}
+			{/*</div>*/}
+
+			<div className="m-12 overflow-y-auto scrollbar pr-4">
 				<div className=" h-1/4 w-full mb-8 grid grid-rows-[62%_38%]">
-					<div ref={dayRef} className=" text-white text-7xl font-bold font-mono pl-4 w-2/3 pb-4 flex items-end">
+					<div ref={dayRef} onMouseEnter={glitchDay} className=" text-white text-7xl font-bold font-mono pl-4 w-2/3 pb-4 flex items-end">
 						Wednesday
 					</div>
-					<div className=" text-4xl font-semibold font-mono pl-4 text-white">
-						14<sup>th</sup> July 2023
-					</div>
+					{schedule &&
+						<div className=" text-4xl font-semibold font-mono pl-4 text-white">
+							{schedule.getDate()}<sup>{getSuffix(schedule.getDate())}</sup> {monthArray[schedule.getMonth()]} {schedule.getFullYear()}
+						</div>
+					}
 				</div>
-				{
+				{// TODO: Use the get available times function and the events array to stitch together a timeline
 					presets.map((preset)=>{
 						return(
 						<div key={preset.id} onClick={()=>{

@@ -12,7 +12,6 @@ const {pushEventToSchedule, pushSpecEventToSchedule} = require("../utils/eventHa
 const {sendEmail} = require("../utils/mailer.cjs");
 const router = express.Router();
 
-// TODO: add a route where you can initiate notification for an event
 router.get("/:scheduleId", async (req, res) => {
     try {
         const scheduleId = parseInt(req.params.scheduleId);
@@ -25,7 +24,7 @@ router.get("/:scheduleId", async (req, res) => {
         if(!config.isPrivate || authStatus.id === schedule.userModelId) {
             const events = await schedule.getEvents()
             events.sort((a, b) => stringTimeToInt(a.start) - stringTimeToInt(b.start))
-            return res.status(200).json({message: "Schedule events found successfully", events, isPrivate: false});
+            return res.status(200).json({message: "Schedule events found successfully", events, isPrivate: false, schedule});
         } else {
             return res.status(404).json({message: "Schedule is private", isPrivate: true})
         }

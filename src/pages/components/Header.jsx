@@ -81,6 +81,21 @@ export const Header = () => {
 					}) }
 				</div>
 			}
+			{topEvents.length === 0 &&
+				<div ref={scrollRef} className="w-3/5 bg-slate-800 transition-all flex flex-wrap no-scrollbar overflow-auto hover:cursor-pointer scroll-smooth " /*onClick={handleClickScroll}*/>
+						<div className="h-full w-full flex">
+							<div className="w-[12%] h-full  flex items-center justify-center text-3xl font-semibold bg-slate-900">
+
+							</div>
+							<div className=" w-3/4 h-full  text-2xl font-semibold pl-4 flex items-center">
+								No events scheduled in the near future
+							</div>
+							<div className="w-[13%] h-full  flex items-center justify-center text-2xl font-semibold bg-slate-900">
+
+							</div>
+						</div>
+				</div>
+			}
 			<div className="w-[15%] h-full">
 				<Dropdown />
 			</div>
