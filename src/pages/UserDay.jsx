@@ -13,6 +13,7 @@ export const UserDay = () => {
 	const [selectedPreset, setSelectedPreset] = useState(null)
 	const [availableTimes, setAvailableTimes] = useState([])
 	const [topNews, setTopNews] = useState([])
+	const newRef = useRef(null)
 	const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 	const monthArray = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 	const emailRef = useRef(null);
@@ -218,6 +219,11 @@ export const UserDay = () => {
 		}
 	}
 
+	const expandNew = ()=>{
+		newRef.current.classList.toggle("h-[10%]")
+		newRef.current.classList.toggle("h-2/3")
+	}
+
 	return (
 		<>
 		{
@@ -262,6 +268,15 @@ export const UserDay = () => {
 			}
 		<div className="w-full h-full  grid grid-cols-[60%_40%]">
 			<div className="bg-zinc-900 bg-opacity-70 m-12 rounded-xl overflow-y-auto scrollbar drop-shadow-xl hover:drop-shadow-2xl transition-all ">
+				<div className="w-full h-[7%] flex">
+					<div className=" w-1/5 flex-col justify-end flex">
+						<div className="w-full h-auto pr-3 border-b-2 flex items-center justify-end text-white text-xl opacity-70">
+							8:00
+						</div>
+					</div>
+					<div className="bg-gray-500 bg-opacity-20 w-full h-full">
+					</div>
+				</div>
 				{
 					availableTimes.length > 0 &&
 					availableTimes.map((timeBlock, index)=>{
@@ -269,13 +284,13 @@ export const UserDay = () => {
 							return (
 								<>
 								<div key={timeBlock[0]} style={{height: getDayPercent(timeBlock) + "%"}} className="w-full flex">
-									<div className=" w-1/6 flex-col justify-end flex">
+									<div className=" w-1/5 flex-col justify-end flex">
 										{/*<div className="w-full h-auto pr-3 border-b-2 flex items-center justify-end text-white text-xl opacity-70">{intTimeToString(timeBlock[0])}</div>*/}
 										<div className="w-full h-auto pr-3 border-b-2 flex items-center justify-end text-white text-xl opacity-70">
 											{intTimeToString(timeBlock[1])}
 										</div>
 									</div>
-									<div>
+									<div className="bg-gray-500 bg-opacity-20 w-full h-full">
 									</div>
 								</div>
 								<EventDisplay key={events[index].id} event={events[index]}/>
@@ -296,6 +311,15 @@ export const UserDay = () => {
 						}
 					})
 				}
+				<div className="w-full h-[7%] flex">
+					<div className=" w-1/5 flex-col justify-end flex">
+						<div className="w-full h-auto pr-3 border-b-2 flex items-center justify-end text-white text-xl opacity-70">
+							18:00
+						</div>
+					</div>
+					<div className="bg-gray-500 bg-opacity-20 w-full h-full">
+					</div>
+				</div>
 			</div>
 			{/*<div className="bg-white m-12 rounded-xl overflow-y-auto scrollbar drop-shadow-xl hover:drop-shadow-2xl transition-all ">*/}
 			{/*	{*/}
@@ -332,7 +356,7 @@ export const UserDay = () => {
 							} else {
 								setSelectedPreset(preset.id);
 							}
-						}} className="bg-blue-400 hover:cursor-pointer transition-all w-full h-auto  text-xl font-semibold mb-3 rounded-xl drop-shadow-sm hover:drop-shadow-xl ">
+						}} className="bg-blue-400 hover:cursor-pointer transition-all w-full h-auto  text-xl font-semibold mb-4 rounded-xl drop-shadow-sm hover:drop-shadow-xl ">
 							<div className="p-4">
 								{preset.title}
 								{authRef.current && <button className="bg-white p-1 hover:bg-zinc-300 rounded-md ml-12" onClick={(e) => {
@@ -345,17 +369,46 @@ export const UserDay = () => {
 					)
 					})
 				}
-				<form className="bg-red-500 bg-opacity-60 w-full h-4/5 rounded-xl p-2 grid grid-rows-[15%_15%_30%_7.5%_7.5%_10%] gap-4">
-					<input ref={emailRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="email" placeholder="Enter email" />
-					<input ref={titleRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="Enter title" />
-					<input ref={descriptionRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="Enter description" />
-					<input ref={startRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="Enter start time" />
-					<input ref={endRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="Enter end time" />
-					<button type="submit" className="bg-white rounded-md drop-shadow-md hover:drop-shadow-2xl w-full h-full text-2xl font-bold" onClick={(e)=>{
-						e.preventDefault();
-						submitForm()
-					}}>Submit</button>
-				</form>
+				{
+					authRef.current &&
+					<div ref={newRef} className="flex items-center overflow-hidden justify-center bg-zinc-700 backdrop-blur-xl bg-opacity-60 hover:cursor-pointer transition-all w-full h-[10%] flex-wrap text-xl font-semibold mb-3 rounded-xl drop-shadow-sm hover:drop-shadow-xl" onClick={expandNew}>
+						<div className="h-16 w-full flex items-center justify-center">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="gray" className="w-11 h-11">
+							<path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+						</svg>
+						</div>
+						<div className="h-full bg-white w-full">
+							<form className="bg-red-500 bg-opacity-60 w-full h-full p-2 grid grid-rows-6 gap-4">
+								<input ref={emailRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="email" placeholder="Enter email"/>
+								<input ref={titleRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="Enter title"/>
+								<input ref={descriptionRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="Enter description"/>
+								<input ref={startRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="Enter start time"/>
+								<input ref={endRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="Enter end time"/>
+								<button type="submit" className="bg-white rounded-md drop-shadow-md hover:drop-shadow-2xl w-full h-full text-2xl font-bold"
+										onClick={(e) => {
+											e.preventDefault();
+											submitForm()
+										}}>Submit
+								</button>
+							</form>
+						</div>
+					</div>
+
+				// 	<form
+				// 	className="bg-red-500 bg-opacity-60 w-full h-4/5 rounded-xl p-2 grid grid-rows-[15%_15%_30%_7.5%_7.5%_10%] gap-4">
+				// 	<input ref={emailRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="email" placeholder="Enter email"/>
+				// 	<input ref={titleRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="Enter title"/>
+				// 	<input ref={descriptionRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="Enter description"/>
+				// 	<input ref={startRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="Enter start time"/>
+				// 	<input ref={endRef} className="transition bg-zinc-800 drop-shadow-md focus:drop-shadow-2xl w-full h-full rounded-md focus:outline-none p-2 text-white text-xl font-semibold" type="text" placeholder="Enter end time"/>
+				// 	<button type="submit" className="bg-white rounded-md drop-shadow-md hover:drop-shadow-2xl w-full h-full text-2xl font-bold"
+				// 			onClick={(e) => {
+				// 				e.preventDefault();
+				// 				submitForm()
+				// 			}}>Submit
+				// 	</button>
+				// </form>
+				}
 				<button className="w-full h-[10%] bg-white font-bold text-2xl rounded-sm mt-4" onClick={()=>{
 					getAvailableTimes();
 				}}>Make available time request</button>
