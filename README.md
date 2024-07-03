@@ -1,5 +1,3 @@
-Sure! Below is a base README for a Vite project that can be run using `npm run dev`:
-
 ---
 
 # Project Name
